@@ -7,5 +7,6 @@ struct MatchmakingResponse: Codable {
         case unauthorized = "unauthorized"
         case unmatched = "unmatched"
         case matched = "matched"
+        case serverError = "serverError"
     }
 }

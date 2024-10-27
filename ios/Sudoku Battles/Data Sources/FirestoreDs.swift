@@ -103,5 +103,4 @@ class FirestoreDs {
             callback(data)
         }
     }
-
 }

@@ -34,6 +34,7 @@ class MatchmakingRepo {
 
                 switch results.status {
                 case .unauthorized: return
+                case .serverError: return
                 case .unmatched:
                     if let matchmakingId = results.matchmaking, matchmakingListener == nil {
                         matchmakingListener = try await FirestoreDs.shared.subscribeToMatchmaking(id: matchmakingId) { [weak self] data in

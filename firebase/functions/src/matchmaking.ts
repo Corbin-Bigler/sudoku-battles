@@ -1,14 +1,43 @@
 import { onCall } from 'firebase-functions/v2/https'
-import { Timestamp } from 'firebase-admin/firestore';
+import { DocumentSnapshot, Timestamp } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 
 const db = admin.firestore();
+const games = db.collection('games')
+const users = db.collection('users')
+const sudoku = {
+    easy: db.collection("sudoku-easy"),
+    medium: db.collection("sudoku-medium"),
+    hard: db.collection("sudoku-hard"),
+    extreme: db.collection("sudoku-extreme"),
+    inhuman: db.collection("sudoku-inhuman")
+}
+
 const matchmakingTimeout = (8 * 1000) // 8 seconds
 
 enum Status {
+    ServerError = "serverError",
     Unauthorized = "unauthorized",
     Unmatched = "unmatched",
     Matched = "matched"
+}
+
+
+async function attemptGetRandomSudoku(): Promise<DocumentSnapshot | null> {
+    const randomValue = sudoku.easy.doc().id
+    const queryRef = sudoku.easy
+        .where("__name__", '>=', randomValue)
+        .orderBy("__name__")
+        .limit(1);
+    
+    try {        
+        const snapshot = await queryRef.get();
+        if (snapshot.empty) return null
+        return snapshot.docs[0]
+    } catch (error) {
+        console.error('Error fetching documents: ', error);
+        return null
+    }
 }
 
 export const matchmaking = onCall({
@@ -26,9 +55,6 @@ export const matchmaking = onCall({
         .where('timestamp', '>=', recentTimestamp)
         .get();
 
-    const games = db.collection('games')
-    const users = db.collection('users')
-
     const filteredDocs = querySnapshot.docs.filter(doc => doc.id !== uid)
     if(filteredDocs.length == 0) {
         console.log('No other players for matchmaking found');
@@ -44,14 +70,30 @@ export const matchmaking = onCall({
         })
     } else {
         const otherMatchmakingRef = filteredDocs[0].ref
-        const board = "530070000600195000098000060800060003400803001700020006060000280000419005000080079"
+
+        // try three times to get a random doc if not throw error
+        var randomGame: DocumentSnapshot | null = null
+        for(let i = 0; i < 3; i++) {
+            const randomSnapshot = await attemptGetRandomSudoku()
+            if(randomSnapshot != null) {
+                randomGame = randomSnapshot
+                break
+            }
+        }
+        let randomSudoku = randomGame?.data()?.puzzle
+        if(randomGame == null || !randomSudoku) {
+            return JSON.stringify({ status: Status.ServerError })    
+        }
+        
+
         const gameData = {
             "firstPlayer": users.doc(uid),
             "secondPlayer": filteredDocs[0].data().user,
-            "firstPlayerBoard": board,
-            "secondPlayerBoard": board,
+            "firstPlayerBoard": randomSudoku,
+            "secondPlayerBoard": randomSudoku,
             "startTime": Timestamp.fromMillis(Timestamp.now().toMillis() + 5000),
-            "given": board
+            "given": randomSudoku,
+            "sudoku": randomGame.ref
         };
         const newGameRef = games.doc();
         await newGameRef.set(gameData)
