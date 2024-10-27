@@ -1,0 +1,21 @@
+{
+  "name": "puzzle-generation",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "run": "node lib/index.js",
+    "dev": "npm run build && nodemon"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.8.1",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
