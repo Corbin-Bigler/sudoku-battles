@@ -38,8 +38,8 @@ export const setUsername = onCall(async (request) => {
             "username": username,
             "usernameLowercase": username.toLowerCase()
         }, { merge: true });
-      return response(Status.Success)
+        return response(Status.Success)
     } catch (error) {
-      return response(Status.ServerError)
+        return response(Status.ServerError)
     }
 })

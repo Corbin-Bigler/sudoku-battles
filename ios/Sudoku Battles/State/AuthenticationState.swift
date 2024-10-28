@@ -1,11 +1,13 @@
 import Foundation
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseMessaging
 
 class AuthenticationState: ObservableObject {
     static let shared = AuthenticationState()
     
     private var auth: Auth!
+    private var fcmToken: String?
     
     @Published var user: AppUser? = nil
     @Published var userData: UserData? = nil
@@ -25,6 +27,10 @@ class AuthenticationState: ObservableObject {
             Main { self.validating = false }
         }
     }
+    func setFcmToken(_ token: String) {
+        fcmToken = token
+    }
+    
     func logIn(credential: AuthCredential) async throws {
         do {
             let authData = try await auth.signIn(with: credential)
@@ -40,6 +46,14 @@ class AuthenticationState: ObservableObject {
         }
         if let userData = try? await FirestoreDs.shared.getUserData(uid: user.uid) {
             await Main.async { self.userData = userData }
+            
+            let granted = try? await PushNotificationsUtility.requestPermissions()
+            print("granted: \(granted)")
+            
+            if let fcmToken,
+               let deviceId = await UIDevice.current.identifierForVendor {
+                try? await FirestoreDs.shared.updateFcmToken(uid: user.uid, fcmToken: fcmToken, deviceId: deviceId)
+            }
         }
         await Main.async { self.gettingUserData = false }
     }

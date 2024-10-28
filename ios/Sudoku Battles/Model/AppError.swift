@@ -5,4 +5,5 @@ enum AppError: Swift.Error {
     case firebaseConnectionError
     case invalidResponse
     case unauthorized
+    case imageTooSmall
 }

@@ -18,9 +18,9 @@ class MatchmakingRepo {
     func cancelMatchmaking(uid: String) {
         matchmakingListener?.remove()
         matchmakingListener = nil
-        FirestoreDs.shared.deleteMatchmaking(uid: uid)
         timer?.invalidate()
         timer = nil
+        Task { try? await FirestoreDs.shared.deleteMatchmaking(uid: uid) }
     }
 
     private func executeMatchmaking(uid: String, callback: @escaping (String) -> ()) {

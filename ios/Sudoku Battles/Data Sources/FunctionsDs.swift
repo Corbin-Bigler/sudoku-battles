@@ -11,6 +11,30 @@ class FunctionsDs {
         self.functions = Functions.functions()
         if Bundle.main.dev { self.functions.useEmulator(withHost: "localhost", port: 5001) }
     }
+    
+    func sendInvite(uid: String) async throws -> InviteResponse {
+        return try await withCheckedThrowingContinuation { continuation in
+            functions.httpsCallable("invite").call(["invitee": uid]) { result, error in
+                if let error {
+                    logger.error("\(error)")
+                    continuation.resume(throwing: error)
+                } else {
+                    guard let data = (result?.data as? String)?.data(using: .utf8) else {
+                        continuation.resume(throwing: AppError.firebaseConnectionError)
+                        return
+                    }
+                    do {
+                        let response = try JSONDecoder().decode(InviteResponse.self, from: data)
+                        continuation.resume(returning: response)
+                    } catch {
+                        continuation.resume(throwing: AppError.invalidResponse)
+                        logger.error("\(error)")
+                        return
+                    }
+                }
+            }
+        }
+    }
 
     func setUsername(username: String) async throws -> SetUsernameResponse {
         return try await withCheckedThrowingContinuation { continuation in

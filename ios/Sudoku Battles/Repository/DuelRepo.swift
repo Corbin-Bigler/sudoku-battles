@@ -6,7 +6,7 @@
 //
 import FirebaseFirestore
 
-class GameRepo: ObservableObject {
+class DuelRepo: ObservableObject {
     
     let gameId: String
     let firstIsFirendly: Bool

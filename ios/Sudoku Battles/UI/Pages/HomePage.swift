@@ -15,11 +15,26 @@ struct HomePage: View {
             Text("Username: \(userData.username)")
             
             Button(action: {
+                navState.navigate {
+                    UserSettingsPage(user: user)
+                }
+            }) {
+                Text("User Settings")
+            }
+            Button(action: {
+                navState.navigate {
+                    InvitePage()
+                }
+            }) {
+                Text("Invite")
+            }
+
+            Button(action: {
                 Main { navState.navigate { MatchmakingPage(user: user) } }
                 MatchmakingRepo.shared.startMatchmaking(uid: user.uid) { gameId in
                     Main {
                         navState.clear()
-                        navState.navigate { GamePage(user: user, userData: userData, gameId: gameId) }
+                        navState.navigate { DuelPage(user: user, userData: userData, gameId: gameId) }
                     }
                 }
             }) {

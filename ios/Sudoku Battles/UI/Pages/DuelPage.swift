@@ -1,11 +1,11 @@
 import SwiftUI
 import FirebaseFirestore
 
-struct GamePage: View {
+struct DuelPage: View {
     @EnvironmentObject private var authState: AuthenticationState
     @EnvironmentObject private var navState: NavigationState
     @State private var error: Bool = false
-    @State private var gameRepo: GameRepo?
+    @State private var duelRepo: DuelRepo?
     @State private var timer: Timer?
     @State private var secondsSinceStart: Int?
     
@@ -14,10 +14,10 @@ struct GamePage: View {
     let gameId: String
     
     func startTimer() {
-        guard let gameRepo else {return}
-        self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(gameRepo.startTime.seconds)
+        guard let duelRepo else {return}
+        self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(duelRepo.startTime.seconds)
         self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(gameRepo.startTime.seconds)
+            self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(duelRepo.startTime.seconds)
         }
     }
     
@@ -71,8 +71,8 @@ struct GamePage: View {
                 .circleButton {}
             }
             .padding(.horizontal, 16)
-            if let gameRepo {
-                ActiveGame(userData:userData, gameRepo: gameRepo)
+            if let duelRepo {
+                ActiveGame(userData:userData, duelRepo: duelRepo)
                     .padding(.horizontal, 16)
             } else {
                 Spacer()
@@ -83,10 +83,10 @@ struct GamePage: View {
         .onAppear {
             Task {
                 do {
-                    let gameRepo = try await GameRepo(friendlyId: user.uid, gameId: gameId)
-                    try await gameRepo.subscribe()
+                    let duelRepo = try await DuelRepo(friendlyId: user.uid, gameId: gameId)
+                    try await duelRepo.subscribe()
                     Main {
-                        self.gameRepo = gameRepo
+                        self.duelRepo = duelRepo
                         startTimer()
                     }
                 } catch {
@@ -95,19 +95,19 @@ struct GamePage: View {
             }
         }
         .onDisappear {
-            gameRepo?.unsubscribe()
+            duelRepo?.unsubscribe()
         }
     }
 }
 
 private struct ActiveGame: View {
     let userData: UserData
-    @ObservedObject private var gameRepo: GameRepo
+    @ObservedObject private var duelRepo: DuelRepo
     @State private var notes: Bool = false
     
-    init(userData: UserData, gameRepo: GameRepo) {
+    init(userData: UserData, duelRepo: DuelRepo) {
         self.userData = userData
-        self._gameRepo = ObservedObject(wrappedValue: gameRepo)
+        self._duelRepo = ObservedObject(wrappedValue: duelRepo)
     }
     
     var body: some View {
@@ -153,7 +153,7 @@ private struct ActiveGame: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 56, height: 56)
-                        CircluarProgress(progress: gameRepo.friendlyBoard.percentageComplete, color: .blue400, size: 52, lineWidth: 4)
+                        CircluarProgress(progress: duelRepo.friendlyBoard.percentageComplete, color: .blue400, size: 52, lineWidth: 4)
                     }
                     .offset(x: -2)
                 }
@@ -174,11 +174,11 @@ private struct ActiveGame: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 56, height: 56)
-                        CircluarProgress(progress: gameRepo.enemyBoard.percentageComplete, color: .pink400, size: 52, lineWidth: 4)
+                        CircluarProgress(progress: duelRepo.enemyBoard.percentageComplete, color: .pink400, size: 52, lineWidth: 4)
                     }
                     .offset(x: 2)
                     VStack(spacing: 4) {
-                        Text(gameRepo.enemyData.username)
+                        Text(duelRepo.enemyData.username)
                             .lineLimit(1)
                             .font(.sora(13, .semibold))
                         HStack(spacing: 20) {
@@ -224,7 +224,7 @@ private struct ActiveGame: View {
                 .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 30))
 
             }
-            let binding = Binding(get: {gameRepo.friendlyBoard}, set: {gameRepo.updateFriendlyBoard(board: $0)})
+            let binding = Binding(get: {duelRepo.friendlyBoard}, set: {duelRepo.updateFriendlyBoard(board: $0)})
             SudokuBoard(model: binding)
         }
         .navigationBarBackButtonHidden()
@@ -257,5 +257,5 @@ struct CustomToggle: View {
 
 
 #Preview {
-    GamePage(user: Mock.appUser, userData: Mock.userData, gameId: "mockGameId")
+    DuelPage(user: Mock.appUser, userData: Mock.userData, gameId: "mockGameId")
 }

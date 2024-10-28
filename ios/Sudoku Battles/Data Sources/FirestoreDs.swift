@@ -24,6 +24,11 @@ class FirestoreDs {
         self.games = firestore.collection("games")
     }
     
+    func updateFcmToken(uid: String, fcmToken: String, deviceId: UUID) async throws {
+        let userReference = users.document(uid)
+        try await userReference.updateData(["fcmTokens.\(deviceId.uuidString.lowercased())" : fcmToken])
+    }
+    
     func subscribeToMatchmaking(id: String, callback: @escaping (MatchmakingData) -> ()) async throws -> ListenerRegistration {
         let matchmakingReference = matchmaking.document(id)
         let matchmakingDocument = try? await matchmakingReference.getDocument()
@@ -40,11 +45,19 @@ class FirestoreDs {
             callback(data)
         }
     }
-    func deleteMatchmaking(uid: String) {
+    func deleteMatchmaking(uid: String) async throws {
         let matchmakingReference = matchmaking.document(uid)
-        matchmakingReference.delete()
+        try await matchmakingReference.delete()
     }
 
+    func setUserDataProfile(path: String, uid: String) async throws {
+        do {
+            try await users.document(uid).updateData(["profilePicture" : path])
+        } catch {
+            logger.error("\(error)")
+            throw AppError.firebaseConnectionError
+        }
+    }
     func getUserData(uid: String) async throws -> UserData? {
         var document: DocumentSnapshot!
         do {
@@ -61,6 +74,27 @@ class FirestoreDs {
             logger.error("\(error)")
             throw AppError.invalidResponse
         }
+    }
+    func getUserDatas(usernamePartial: String) async throws -> [String : UserData]? {
+        var query: QuerySnapshot!
+        do {
+            query = try await users
+                .whereField("username", isGreaterThanOrEqualTo: usernamePartial)
+                .whereField("username", isLessThanOrEqualTo: usernamePartial + "\u{f8ff}")
+                .limit(to: 5)
+                .getDocuments()
+        } catch {
+            logger.error("\(error)")
+            throw AppError.firebaseConnectionError
+        }
+
+        var results: [String: UserData] = [:]
+        for document in query.documents {
+            if let userData = try? document.data(as: UserData.self) {
+                results[document.documentID] = userData
+            }
+        }
+        return results
     }
     
     func updateGameBoard(gameId: String, firstPlayer: Bool, board: String) async throws {
