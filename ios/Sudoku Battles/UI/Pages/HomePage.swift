@@ -4,7 +4,7 @@ import FirebaseFirestore
 struct HomePage: View {
     @EnvironmentObject private var authState: AuthenticationState
     @EnvironmentObject private var navState: NavigationState
-        
+
     let user: AppUser
     let userData: UserData
     

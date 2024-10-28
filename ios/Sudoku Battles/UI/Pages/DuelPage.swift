@@ -104,6 +104,8 @@ private struct ActiveGame: View {
     let userData: UserData
     @ObservedObject private var duelRepo: DuelRepo
     @State private var notes: Bool = false
+    @State private var friendlyProfilePicture: Image?
+    @State private var enemyProfilePicture: Image?
     
     init(userData: UserData, duelRepo: DuelRepo) {
         self.userData = userData
@@ -149,10 +151,11 @@ private struct ActiveGame: View {
                         }
                     }
                     ZStack {
-                        Image("UserProfile")
+                        (friendlyProfilePicture ?? Image("UserProfile"))
                             .resizable()
                             .scaledToFit()
                             .frame(width: 56, height: 56)
+                            .clipShape(Circle())
                         CircluarProgress(progress: duelRepo.friendlyBoard.percentageComplete, color: .blue400, size: 52, lineWidth: 4)
                     }
                     .offset(x: -2)
@@ -170,10 +173,11 @@ private struct ActiveGame: View {
                 
                 HStack {
                     ZStack {
-                        Image("UserProfile")
+                        (enemyProfilePicture ?? Image("UserProfile"))
                             .resizable()
                             .scaledToFit()
                             .frame(width: 56, height: 56)
+                            .clipShape(Circle())
                         CircluarProgress(progress: duelRepo.enemyBoard.percentageComplete, color: .pink400, size: 52, lineWidth: 4)
                     }
                     .offset(x: 2)
@@ -226,6 +230,45 @@ private struct ActiveGame: View {
             }
             let binding = Binding(get: {duelRepo.friendlyBoard}, set: {duelRepo.updateFriendlyBoard(board: $0)})
             SudokuBoard(model: binding)
+        }
+        .onAppear {
+            Task {
+                if let profilePicture = userData.profilePicture {
+                    Task {
+                        do {
+                            let imageData = try await StorageDs.shared.data(from: profilePicture)
+                            if let uiImage = UIImage(data: imageData) {
+                                friendlyProfilePicture = Image(uiImage: uiImage)
+                            } else {
+                                friendlyProfilePicture = Image("UserProfile")
+                            }
+                        } catch {
+                            friendlyProfilePicture = Image("UserProfile")
+                        }
+                    }
+                } else {
+                    friendlyProfilePicture = Image("UserProfile")
+                }
+                
+                if let profilePicture = duelRepo.enemyData.profilePicture {
+                    Task {
+                        do {
+                            let imageData = try await StorageDs.shared.data(from: profilePicture)
+                            if let uiImage = UIImage(data: imageData) {
+                                enemyProfilePicture = Image(uiImage: uiImage)
+                            } else {
+                                enemyProfilePicture = Image("UserProfile")
+                            }
+                        } catch {
+                            logger.error("\(error)")
+                            enemyProfilePicture = Image("UserProfile")
+                        }
+                    }
+                } else {
+                    enemyProfilePicture = Image("UserProfile")
+                }
+
+            }
         }
         .navigationBarBackButtonHidden()
     }

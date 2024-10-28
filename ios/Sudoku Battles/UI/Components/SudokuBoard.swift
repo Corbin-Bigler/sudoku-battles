@@ -169,7 +169,7 @@ struct SudokuBoard: View {
                 }
                 Color.gray50
                     .frame(width: 1, height: 50)
-                RoundedButton(icon: Image("CircleArrowIcon"), label: "Undo") {
+                RoundedButton(icon: Image("CircleArrowIcon"), label: "Undo", outlined: true) {
                     if states.count > 1 {states.popLast()}
                     if !states.isEmpty { model = states.last! }
                 }

@@ -33,4 +33,22 @@ extension UIImage {
         }
         return nil
     }
+    
+    func cropToSquare() -> UIImage? {
+        let originalWidth = size.width
+        let originalHeight = size.height
+
+        // Determine the shortest side to form the square
+        let squareSize = min(originalWidth, originalHeight)
+
+        // Calculate the x and y origin points to center the square
+        let xOffset = (originalWidth - squareSize) / 2
+        let yOffset = (originalHeight - squareSize) / 2
+
+        let cropRect = CGRect(x: xOffset, y: yOffset, width: squareSize, height: squareSize)
+
+        // Perform the cropping
+        guard let cgImage = self.cgImage?.cropping(to: cropRect) else { return nil }
+        return UIImage(cgImage: cgImage, scale: self.scale, orientation: self.imageOrientation)
+    }
 }
