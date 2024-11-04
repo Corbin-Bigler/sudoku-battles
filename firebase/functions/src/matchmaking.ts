@@ -3,7 +3,7 @@ import { DocumentSnapshot, Timestamp } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 
 const db = admin.firestore();
-const games = db.collection('games')
+const duels = db.collection('duels')
 const users = db.collection('users')
 const sudoku = {
     easy: db.collection("sudoku-easy"),
@@ -25,6 +25,7 @@ enum Status {
 
 async function attemptGetRandomSudoku(): Promise<DocumentSnapshot | null> {
     const randomValue = sudoku.easy.doc().id
+    console.log(`random value: ${randomValue}`)
     const queryRef = sudoku.easy
         .where("__name__", '>=', randomValue)
         .orderBy("__name__")
@@ -82,6 +83,7 @@ export const matchmaking = onCall({
         }
         let randomSudoku = randomGame?.data()?.puzzle
         if(randomGame == null || !randomSudoku) {
+            
             return JSON.stringify({ status: Status.ServerError })    
         }
         
@@ -95,14 +97,14 @@ export const matchmaking = onCall({
             "given": randomSudoku,
             "sudoku": randomGame.ref
         };
-        const newGameRef = games.doc();
-        await newGameRef.set(gameData)
+        const newDuelRef = duels.doc();
+        await newDuelRef.set(gameData)
 
-        otherMatchmakingRef.update({game: newGameRef})
+        otherMatchmakingRef.update({game: newDuelRef})
 
         return JSON.stringify({
             status: Status.Matched,
-            game: newGameRef.id
+            duel: newDuelRef.id
         })
     }
 })

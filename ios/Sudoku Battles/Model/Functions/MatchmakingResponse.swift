@@ -1,6 +1,6 @@
 struct MatchmakingResponse: Codable {
     let status: Status
-    let game: String?
+    let duel: String?
     let matchmaking: String?
     
     enum Status: String, Codable {

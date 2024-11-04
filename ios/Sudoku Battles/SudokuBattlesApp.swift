@@ -8,12 +8,19 @@ struct SudokuBattlesApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if !authState.validating {
+            if !authState.validating && !authState.unableToContactFirebase {
                 NavigationContainer()
                     .environmentObject(authState)
                     .preferredColorScheme(.light)
             } else {
                 LaunchPage()
+                    .alert("Network Error", isPresented: $authState.unableToContactFirebase) {
+                        Button("Retry", role: .cancel) {
+                            authState.initialize()
+                        }
+                    } message: {
+                        Text("Unable to connect to server.")
+                    }
             }
         }
     }

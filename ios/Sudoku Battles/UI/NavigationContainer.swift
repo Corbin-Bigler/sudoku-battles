@@ -26,7 +26,8 @@ struct NavigationContainer: View {
 
 struct NavigationContainerPreview: View {
     @State private var navRoute: NavigationState
-    
+    @State private var authState = AuthenticationState.shared
+
     init(setup: ()->() = {}, @ViewBuilder content: ()->any View) {
         let navRoute = NavigationState()
         navRoute.navigate(content: content)
@@ -36,5 +37,6 @@ struct NavigationContainerPreview: View {
     
     var body: some View {
         NavigationContainer(navRoute: navRoute)
+            .environmentObject(authState)
     }
 }

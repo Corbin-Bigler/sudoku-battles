@@ -49,10 +49,10 @@ class MatchmakingRepo {
                         }
                     }
                 case .matched:
-                    if let gameId = results.game {
+                    if let duelId = results.duel {
                         cancelMatchmaking(uid: uid)
-                        logger.debug("\("Matched game from call \(gameId)")")
-                        callback(gameId)
+                        logger.debug("\("Matched game from call \(duelId)")")
+                        callback(duelId)
                     }
                 }
             } catch {

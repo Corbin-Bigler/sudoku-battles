@@ -3,49 +3,65 @@ import SwiftUI
 struct RoundedButton: View {
     var icon: Image?
     var label: String
-    var outlined: Bool
+//    var style: Style
+    var color: Color
+    var outlined: Bool = false
+    var loading: Bool = false
     var action: () -> ()
-
+    
+    var foregroundColor: Color {
+        if outlined { return color }
+        else { return color == .white ? .black : .white }
+    }
+    
     var body: some View {
-        let shape = RoundedRectangle(cornerRadius: 11)
-        let foregroundColor: Color = outlined ? .purple400 : .black
-        let backgroundColor: Color = outlined ? .clear : .white
-        let outlineColor: Color = outlined ? .purple400 : .gray50
+        let shape = RoundedRectangle(cornerRadius: 25)
         Button(action: action) {
             HStack(spacing: 6) {
-                if outlined {
-                    icon?
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 18, height: 18)
+                if loading {
+                    LoadingIndicator(size: 26, lineWidth: 4, color: foregroundColor)
                 } else {
-                    icon?
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 18, height: 18)
-                }
-                
-                Text(label)
-                    .font(.sora(16, .semibold))
+                    if !outlined {
+                        icon?
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                    } else {
+                        icon?
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                    }
+                    
+                    Text(label)
+                        .font(.sora(16, .semibold))
 
+                }
             }
             .frame(height: 50)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, 20)
         }
-        .background(backgroundColor)
+        .background(outlined ? .clear : color)
         .clipShape(shape)
         .foregroundStyle(foregroundColor)
         .overlay {
             shape
                 .stroke(lineWidth: 1)
-                .foregroundStyle(outlineColor)
+                .foregroundStyle(outlined ? foregroundColor : color)
         }
     }
 }
 
 #Preview {
-    RoundedButton(icon: Image("CircleArrowIcon"), label: "Preview", outlined: true) {}
-    RoundedButton(icon: Image("GoogleLogo"), label: "Preview", outlined: false) {}
+    VStack{
+        RoundedButton(icon: Image("CircleArrowIcon"), label: "Preview", color: .blue400, outlined: true) {}
+        RoundedButton(icon: Image("GoogleLogo"), label: "Preview", color: .white, outlined: false) {}
+        RoundedButton(icon: Image("CircleArrowIcon"), label: "Preview", color: .blue400, outlined: false) {}
+        RoundedButton(icon: Image("CircleArrowIcon"), label: "Preview", color: .blue400, outlined: true) {}
+        RoundedButton(icon: Image("GoogleLogo"), label: "Preview", color: .white, outlined: false, loading: true) {}
+        RoundedButton(icon: Image("CircleArrowIcon"), label: "Preview", color: .red400, outlined: false, loading: true) {}
+    }
+    .background(.blue900)
 }

@@ -7,26 +7,29 @@ class FirestoreDs {
     private let firestore: Firestore
     private let matchmaking: CollectionReference
     private let users: CollectionReference
-    private let games: CollectionReference
+    private let duels: CollectionReference
 
     init() {
         self.firestore = Firestore.firestore()
         if Bundle.main.dev {
             let settings = Firestore.firestore().settings
+            settings.cacheSettings = MemoryCacheSettings()
             if(Bundle.main.dev) {
-                settings.host = "localhost:8080"
+                settings.host = "\(DevEnvironment.emulatorHost):8080"
                 settings.isSSLEnabled = false
             }
             Firestore.firestore().settings = settings
         }
         self.matchmaking = firestore.collection("matchmaking")
         self.users = firestore.collection("users")
-        self.games = firestore.collection("games")
+        self.duels = firestore.collection("duels")
     }
     
     func updateFcmToken(uid: String, fcmToken: String, deviceId: UUID) async throws {
         let userReference = users.document(uid)
+        
         try await userReference.updateData(["fcmTokens.\(deviceId.uuidString.lowercased())" : fcmToken])
+        
     }
     
     func subscribeToMatchmaking(id: String, callback: @escaping (MatchmakingData) -> ()) async throws -> ListenerRegistration {
@@ -79,8 +82,8 @@ class FirestoreDs {
         var query: QuerySnapshot!
         do {
             query = try await users
-                .whereField("username", isGreaterThanOrEqualTo: usernamePartial)
-                .whereField("username", isLessThanOrEqualTo: usernamePartial + "\u{f8ff}")
+                .whereField("usernameLowercase", isGreaterThanOrEqualTo: usernamePartial.lowercased())
+                .whereField("usernameLowercase", isLessThanOrEqualTo: usernamePartial.lowercased() + "\u{f8ff}")
                 .limit(to: 5)
                 .getDocuments()
         } catch {
@@ -97,19 +100,19 @@ class FirestoreDs {
         return results
     }
     
-    func updateGameBoard(gameId: String, firstPlayer: Bool, board: String) async throws {
+    func updateGameBoard(duelId: String, firstPlayer: Bool, board: String) async throws {
         let field = firstPlayer ? "firstPlayerBoard" : "secondPlayerBoard"
         do {
-            try await games.document(gameId).updateData([field : board])
+            try await duels.document(duelId).updateData([field : board])
         } catch {
             logger.error("\(error)")
             throw AppError.firebaseConnectionError
         }
     }
-    func getGame(id: String) async throws -> GameData? {
+    func getDuel(id: String) async throws -> DuelData? {
         var document: DocumentSnapshot!
         do {
-            document = try await games.document(id).getDocument()
+            document = try await duels.document(id).getDocument()
             if !document.exists { return nil }
         } catch {
             logger.error("\(error)")
@@ -117,18 +120,18 @@ class FirestoreDs {
         }
         
         do {
-            return try document.data(as: GameData.self)
+            return try document.data(as: DuelData.self)
         } catch {
             logger.error("\(error)")
             throw AppError.invalidResponse
         }
     }
-    func subscribeToGame(id: String, callback: @escaping (GameData) -> ()) async throws -> ListenerRegistration {
-        let gameReference = games.document(id)
+    func subscribeToDuel(id: String, callback: @escaping (DuelData) -> ()) async throws -> ListenerRegistration {
+        let gameReference = duels.document(id)
         let gameDocument = try? await gameReference.getDocument()
-        if let data = try? gameDocument?.data(as: GameData.self) { callback(data) }
+        if let data = try? gameDocument?.data(as: DuelData.self) { callback(data) }
         return gameReference.addSnapshotListener { (documentSnapshot, error) in
-            guard let document = documentSnapshot, document.exists, let data = try? document.data(as: GameData.self),
+            guard let document = documentSnapshot, document.exists, let data = try? document.data(as: DuelData.self),
                   error == nil
             else {
                 return
@@ -136,5 +139,14 @@ class FirestoreDs {
 
             callback(data)
         }
+    }
+    
+    func getSolution(duelId: String) async throws -> String? {
+        guard let sudoku = (try? (try? await duels.document(duelId).getDocument())?.data(as: DuelData.self))?.sudoku,
+              let solution = (try? (try? await sudoku.getDocument())?.data(as: SudokuData.self))?.solution
+        else {
+            return nil
+        }
+        return solution
     }
 }

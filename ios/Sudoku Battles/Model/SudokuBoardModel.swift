@@ -3,7 +3,7 @@ import Foundation
 private let emptyBoardArray: [[Int?]] = Array(repeating: Array(repeating: nil, count: 9), count: 9)
 private let emptyNotesArray: [[[Int]]] =  Array(repeating: Array(repeating: [], count: 9), count: 9)
 
-struct SudokuBoardModel {
+struct SudokuBoardModel: Codable {
     private static let boardSize = 9
     static let empty = SudokuBoardModel(given: emptyBoardArray, board: emptyBoardArray)
     
@@ -21,6 +21,20 @@ struct SudokuBoardModel {
         return boardPercentComplete
     }
     
+    var givenString: String {
+        var givenString = ""
+        for y in 0..<9 {
+            for x in 0..<9 {
+                if let number = given[y][x] {
+                    givenString.append(String(number))
+                } else {
+                    givenString.append("0")
+                }
+            }
+        }
+        return givenString
+    }
+
     var boardString: String {
         var boardString = ""
         for y in 0..<9 {

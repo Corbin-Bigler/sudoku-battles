@@ -8,6 +8,7 @@ struct DuelPage: View {
     @State private var duelRepo: DuelRepo?
     @State private var timer: Timer?
     @State private var secondsSinceStart: Int?
+    @State private var won: Bool?
     
     let user: AppUser
     let userData: UserData
@@ -83,7 +84,7 @@ struct DuelPage: View {
         .onAppear {
             Task {
                 do {
-                    let duelRepo = try await DuelRepo(friendlyId: user.uid, gameId: gameId)
+                    let duelRepo = try await DuelRepo(friendlyId: user.uid, duelId: gameId)
                     try await duelRepo.subscribe()
                     Main {
                         self.duelRepo = duelRepo
@@ -102,6 +103,7 @@ struct DuelPage: View {
 
 private struct ActiveGame: View {
     let userData: UserData
+    @EnvironmentObject private var navState: NavigationState
     @ObservedObject private var duelRepo: DuelRepo
     @State private var notes: Bool = false
     @State private var friendlyProfilePicture: Image?
@@ -230,6 +232,24 @@ private struct ActiveGame: View {
             }
             let binding = Binding(get: {duelRepo.friendlyBoard}, set: {duelRepo.updateFriendlyBoard(board: $0)})
             SudokuBoard(model: binding)
+                .overlay {
+                    if Bundle.main.dev {
+                        VStack {
+                            Button(action: {
+                                Task {
+                                    guard let solution = try? await FirestoreDs.shared.getSolution(duelId: duelRepo.duelId),
+                                          let board = SudokuBoardModel(given: duelRepo.friendlyBoard.givenString, board: solution)
+                                    else { return }
+                                    duelRepo.updateFriendlyBoard(board: board)
+                                }
+                            }) {
+                                Text("Fill Board")
+                            }
+                            Spacer()
+                        }
+                        .offset(y: -20)
+                    }
+                }
         }
         .onAppear {
             Task {
@@ -271,33 +291,22 @@ private struct ActiveGame: View {
             }
         }
         .navigationBarBackButtonHidden()
+//        .errorOverlay(
+//            Binding(
+//                get: {
+//                    guard let won = duelRepo.won else { return nil }
+//                    if won { return ErrorOverlayModel(title: "You Won!", body: "You beat \(duelRepo.enemyData.username)") }
+//                    else { return ErrorOverlayModel(title: "You Suck!", body: "You lost to \(duelRepo.enemyData.username)") }
+//                },
+//                set: {
+//                    if $0 == nil {
+//                        navState.clear()
+//                    }
+//                }
+//            )
+//        )
     }
 }
-
-struct CustomToggle: View {
-    @Binding var isOn: Bool
-
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 15)
-                .fill(isOn ? Color.purple400 : Color.purple50)
-                .animation(.easeInOut(duration: 0.3), value: isOn)
-                .frame(width: 60, height: 30)
-
-            HStack {
-                if isOn { Spacer() }
-                Circle()
-                    .frame(width: 26, height: 26)
-                    .foregroundColor(Color.white)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isOn)
-                if !isOn { Spacer() }
-            }
-            .padding(2)
-        }
-        .frame(width: 60, height: 30)
-    }
-}
-
 
 #Preview {
     DuelPage(user: Mock.appUser, userData: Mock.userData, gameId: "mockGameId")

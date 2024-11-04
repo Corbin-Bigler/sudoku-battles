@@ -10,7 +10,7 @@ class StorageDs {
     init() {
         storage = Storage.storage()
         if Bundle.main.dev {
-            storage.useEmulator(withHost: "localhost", port: 9199)
+            storage.useEmulator(withHost: "\(DevEnvironment.emulatorHost)", port: 9199)
         }
         storageReference = storage.reference()
     }

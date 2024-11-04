@@ -9,40 +9,65 @@ struct HomePage: View {
     let userData: UserData
     
     var body: some View {
-        VStack {
-            Text("Home Page")
-            Text("UID: \(user.uid)")
-            Text("Username: \(userData.username)")
-            
-            Button(action: {
-                navState.navigate {
-                    UserSettingsPage(user: user)
-                }
-            }) {
-                Text("User Settings")
-            }
-            Button(action: {
-                navState.navigate {
-                    InvitePage()
-                }
-            }) {
-                Text("Invite")
-            }
-
-            Button(action: {
-                Main { navState.navigate { MatchmakingPage(user: user) } }
-                MatchmakingRepo.shared.startMatchmaking(uid: user.uid) { gameId in
-                    Main {
-                        navState.clear()
-                        navState.navigate { DuelPage(user: user, userData: userData, gameId: gameId) }
+        VStack(spacing: 0) {
+            VStack(spacing: 40) {
+                HStack {
+                    Spacer()
+                    ZStack {
+                        Image("GearIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 20, height: 20)
+                            .foregroundStyle(.black)
+                    }
+                    .frame(width: 40, height: 40)
+                    .circleButton(outline: .black) {
+                        navState.navigate { UserSettingsPage(user: user, userData: userData) }
                     }
                 }
-            }) {
-                Text("Start Matchmaking")
+                
+                ZStack {
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 150, height: 150)
+                        .shadow(color: Color.blue.opacity(0.5), radius: 90)
+                    Image("SudokuBattlesLogo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                }
+                
+                VStack(spacing: 20) {
+                    Text("WAITING FOR YOU")
+                        .font(.sora(14, .semibold))
+                        .kerning(1.4)
+                    Text("WAITING FOR RESPONSE")
+                        .font(.sora(14, .semibold))
+                        .kerning(1.4)
+                    Spacer()
+                }
             }
-            Button(action: {authState.logOut()}) {
-                Text("Sign Out")
+            .padding(16)
+            RoundedButton(label: "Play", color: .blue400, outlined: false) {
+                navState.navigate {
+                    PlayPage(user: user, userData: userData)
+                }
             }
+            .padding(16)
+            .overlay(
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(.gray400),
+                alignment: .top
+            )
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            Image("SplatterNoise")
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .offset(y: -200)
+            .ignoresSafeArea()
         }
     }
 }

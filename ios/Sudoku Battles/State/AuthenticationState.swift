@@ -13,15 +13,26 @@ class AuthenticationState: ObservableObject {
     @Published var userData: UserData? = nil
     @Published var validating = true
     @Published var gettingUserData = false
+    @Published var unableToContactFirebase = false
 
     func initialize() {
         self.auth = Auth.auth()
-        if Bundle.main.dev { auth.useEmulator(withHost: "localhost", port: 9099) }
+        if Bundle.main.dev { auth.useEmulator(withHost: "\(DevEnvironment.emulatorHost)", port: 9099) }
+        
+        Main {
+            self.validating = true
+            self.gettingUserData = false
+            self.unableToContactFirebase = false
+        }
         
         Task {
             if let user = auth.currentUser {
-                let _ = try? await user.getIDTokenResult(forcingRefresh: true)
-                await logIn(user: AppUser(user))
+                do {
+                    let _ = try await user.getIDTokenResult(forcingRefresh: true)
+                    await logIn(user: AppUser(user))
+                } catch {
+                    Main { self.unableToContactFirebase = true }
+                }
             }
             
             Main { self.validating = false }
@@ -47,8 +58,7 @@ class AuthenticationState: ObservableObject {
         if let userData = try? await FirestoreDs.shared.getUserData(uid: user.uid) {
             await Main.async { self.userData = userData }
             
-            let granted = try? await PushNotificationsUtility.requestPermissions()
-            print("granted: \(granted)")
+//            let granted = try? await PushNotificationsUtility.requestPermissions()
             
             if let fcmToken,
                let deviceId = await UIDevice.current.identifierForVendor {
