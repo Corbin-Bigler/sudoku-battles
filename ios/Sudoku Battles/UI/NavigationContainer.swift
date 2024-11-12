@@ -2,25 +2,30 @@ import SwiftUI
 
 struct NavigationContainer: View {
     @ObservedObject var authState = AuthenticationState.shared
+    @ObservedObject var gamesState = GamesState.shared
     @StateObject private var navRoute: NavigationState
     init(navRoute: NavigationState = NavigationState()) {
         self._navRoute = StateObject(wrappedValue: navRoute)
     }
 
     var body: some View {
-        NavigationStack(path: $navRoute.path) {
-            Group {
-                if let user = authState.user, let userData = authState.userData {
-                    HomePage(user: user, userData: userData)
-                } else {
-                    LandingPage()
+        VStack{
+            NavigationStack(path: $navRoute.path) {
+                Group {
+                    if let user = authState.user, let userData = authState.userData, !gamesState.games.isEmpty {
+                        HomePage(user: user, userData: userData)
+                    } else if let user = authState.user, let userData = authState.userData {
+                        PlayPage(user: user, userData: userData)
+                    } else {
+                        LandingPage()
+                    }
+                }
+                .navigationDestination(for: NavigationState.Page.self) { page in
+                    page.view
                 }
             }
-            .navigationDestination(for: NavigationState.Page.self) { page in
-                page.view
-            }
+            .environmentObject(navRoute)
         }
-        .environmentObject(navRoute)
     }
 }
 

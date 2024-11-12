@@ -43,7 +43,7 @@ class FunctionsDs {
     func setUsername(username: String) async throws -> SetUsernameResponse {
         try await callFunction("setUsername", params: ["username": username])
     }
-
+    
     func verifyDuelBoard(duelId: String) async throws -> VerifyDuelBoardResponse {
         try await callFunction("verifyDuelBoard", params: ["duelId": duelId])
     }

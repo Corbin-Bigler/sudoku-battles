@@ -93,7 +93,7 @@ export const matchmaking = onCall({
             "secondPlayer": filteredDocs[0].data().user,
             "firstPlayerBoard": randomSudoku,
             "secondPlayerBoard": randomSudoku,
-            "startTime": Timestamp.fromMillis(Timestamp.now().toMillis() + 5000),
+            "startTime": Timestamp.fromMillis(Timestamp.now().toMillis() + 3000),
             "given": randomSudoku,
             "sudoku": randomGame.ref
         };

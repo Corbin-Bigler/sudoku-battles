@@ -3,7 +3,6 @@ import SwiftUI
 struct RoundedButton: View {
     var icon: Image?
     var label: String
-//    var style: Style
     var color: Color
     var outlined: Bool = false
     var loading: Bool = false
@@ -16,19 +15,21 @@ struct RoundedButton: View {
     
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: 25)
-        Button(action: action) {
+        Button(action: {
+            if !loading { action() }
+        }) {
             HStack(spacing: 6) {
                 if loading {
                     LoadingIndicator(size: 26, lineWidth: 4, color: foregroundColor)
                 } else {
                     if !outlined {
                         icon?
-                            .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 18, height: 18)
                     } else {
                         icon?
+                            .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 18, height: 18)

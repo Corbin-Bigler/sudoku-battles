@@ -7,7 +7,7 @@ class MatchmakingRepo {
     
     private var timer: Timer?
     var matchmakingListener: ListenerRegistration?
-    
+
     func startMatchmaking(uid: String, callback: @escaping (String) -> ()) {
         cancelMatchmaking(uid: uid)
         timer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in

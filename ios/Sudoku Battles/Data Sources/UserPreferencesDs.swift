@@ -14,13 +14,16 @@ class UserPreferencesDs {
     let jsonEncoder = JSONEncoder()
     let jsonDecoder = JSONDecoder()
     
-    func save(sudokuBoard: SudokuBoardModel) {
-        let encoded = try? jsonEncoder.encode(sudokuBoard)
-        userDefaults.set(encoded, forKey: savedGameKey)
+    func save(game: SoloGame, difficulty: Difficulty) {
+        let encoded = try? jsonEncoder.encode(game)
+        userDefaults.set(encoded, forKey: savedGameKey + "_\(difficulty.rawValue)")
     }
-    func getSudokuBoard() -> SudokuBoardModel? {
-        if let boardModel = userDefaults.string(forKey: savedGameKey)?.data(using: .utf8) {
-            return try? jsonDecoder.decode(SudokuBoardModel.self, from: boardModel)
+    func deleteGame(difficulty: Difficulty) {
+        userDefaults.removeObject(forKey: savedGameKey + "_\(difficulty.rawValue)")
+    }
+    func getGame(difficulty: Difficulty) -> SoloGame? {
+        if let boardModel = userDefaults.data(forKey: savedGameKey + "_\(difficulty.rawValue)") {
+            return try? jsonDecoder.decode(SoloGame.self, from: boardModel)
         }
         return nil
     }

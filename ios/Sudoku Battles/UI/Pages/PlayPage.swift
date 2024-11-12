@@ -2,13 +2,31 @@ import SwiftUI
 
 struct PlayPage: View {
     @EnvironmentObject private var navState: NavigationState
+    @ObservedObject var gamesState = GamesState.shared
 
     let user: AppUser
     let userData: UserData
 
     var body: some View {
         VStack(spacing: 40) {
-            HStack {
+            HStack(spacing: 0) {
+                if gamesState.games.isEmpty {
+                    Spacer()
+                        .frame(width: 40, height: 40)
+                } else {
+                    ZStack {
+                        Image("ChevronIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 12)
+                            .foregroundStyle(Color.black)
+                    }
+                    .frame(width: 40, height: 40)
+                    .circleButton(outline: .black) {
+                        navState.navigate(back: 1)
+                    }
+                }
                 Spacer()
                 ZStack {
                     Image("GearIcon")
@@ -62,12 +80,8 @@ struct PlayPage: View {
                     }
 
                     Button(action: {
-                        Main { navState.navigate { MatchmakingPage(user: user) } }
-                        MatchmakingRepo.shared.startMatchmaking(uid: user.uid) { gameId in
-                            Main {
-                                navState.clear()
-                                navState.navigate { DuelPage(user: user, userData: userData, gameId: gameId) }
-                            }
+                        Main {
+                            navState.navigate { MatchmakingPage(user: user, userData: userData) }
                         }
                     }) {
                         HStack(spacing: 16) {

@@ -30,6 +30,14 @@ struct SudokuBoard: View {
         var newBoard = model
         newBoard[(x, y)] = newBoard[(x, y)] == value ? nil : value
         newBoard.clearNotes(x: x, y: y)
+        if let value {
+            for index in 0..<9 {
+                newBoard.disableNote(x: x, y: index, key: value)
+                newBoard.disableNote(x: index, y: y, key: value)
+            }
+        }
+        
+        
         search = nil
         states.append(newBoard)
         model = newBoard
@@ -53,23 +61,58 @@ struct SudokuBoard: View {
                                 
                                 SudokuCell(value: value, notes: notes, permenant: givenValue != nil, highlighted: highlighted)
                                     .onTapGesture {
-                                        if isSelected {
-                                            selectedCell = nil
-                                        } else if let key, self.notes {
-//                                            if value != nil { return }
-                                            if key == 0 { clearNotes(x: column, y: row) }
-                                            else { toggleNote(x: column, y: row, value: key) }
-                                        } else if let key, givenValue == nil {
-                                            setCell(x: column, y: row, value: key == 0 ? nil : key)
-                                        } else if let value {
-                                            if search == value { search = nil }
-                                            else {search = value}
-                                            selectedCell = (x: column, y: row)
-                                            key = nil
-                                        } else if givenValue == nil, key == nil {
-                                            selectedCell = (x: column, y: row)
-                                            search = nil
+                                        if value == nil {
+                                            if let key {
+                                                if self.notes {
+                                                    if key == 0 { clearNotes(x: column, y: row) }
+                                                    else { toggleNote(x: column, y: row, value: key) }
+                                                } else {
+                                                    setCell(x: column, y: row, value: key == 0 ? nil : key)
+                                                }
+                                            } else {
+                                                if isSelected { selectedCell = nil }
+                                                else { selectedCell = (x: column, y: row) }
+                                                search = nil
+                                            }
+                                        } else {
+                                            if let key, givenValue == nil {
+                                                if self.notes {
+                                                    if key == 0 { clearNotes(x: column, y: row) }
+                                                    else { toggleNote(x: column, y: row, value: key) }
+                                                } else {
+                                                    setCell(x: column, y: row, value: key == 0 ? nil : key)
+                                                }
+                                            } else {
+                                                if givenValue != nil {
+                                                    if value == search { search = nil }
+                                                    else { search = value }
+                                                    selectedCell = nil
+                                                    key = nil
+                                                } else {
+                                                    if isSelected { selectedCell = nil }
+                                                    else { selectedCell = (x: column, y: row) }
+                                                    search = nil
+                                                }
+                                            }
                                         }
+
+//                                        if search != nil && value == search {
+//                                            search = nil
+//                                        } else if isSelected {
+//                                            selectedCell = nil
+//                                        } else if let key, self.notes {
+//                                            if key == 0 { clearNotes(x: column, y: row) }
+//                                            else { toggleNote(x: column, y: row, value: key) }
+//                                        } else if let key, givenValue == nil {
+//                                            setCell(x: column, y: row, value: key == 0 ? nil : key)
+//                                        } else if let value {
+//                                            search = value
+//                                            selectedCell = nil
+//                                            key = nil
+//                                        } else if givenValue == nil, key == nil {
+//                                            selectedCell = (x: column, y: row)
+//                                            search = nil
+//                                        }
                                     }
                                 if column != 8 {
                                     Color.blue100
@@ -115,6 +158,7 @@ struct SudokuBoard: View {
                                     key = nil
                                 } else {
                                     key = number
+                                    search = nil
                                 }
                             }
                     }
@@ -135,6 +179,7 @@ struct SudokuBoard: View {
                                     key = nil
                                 } else {
                                     key = number
+                                    search = nil
                                 }
                             }
                     }
@@ -158,6 +203,7 @@ struct SudokuBoard: View {
                             key = nil
                         } else {
                             key = 0
+                            search = nil
                         }
                     }
                 }
@@ -244,10 +290,8 @@ private struct SudokuCell: View {
                     GridItem(.fixed(width), spacing: 0),
                     GridItem(.fixed(width), spacing: 0)
                 ]
-
                 
                 LazyVGrid(columns: columns, spacing: 0) {
-                    
                     ForEach(1..<10) { index in
                         if notes.contains(index) {
                             Text("\(index)")

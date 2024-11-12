@@ -10,22 +10,12 @@ struct GameRow: View {
     var seconds: Int
     var enemy: Bool
     var timestamp: Date
-    
-    var color: Color {
-        switch difficulty {
-        case .easy: return .green400
-        case .medium: return .blue400
-        case .hard: return .purple400
-        case .extreme: return .yellow400
-        case .inhuman: return .red400
-        }
-    }
-    
+        
     var body: some View {
         HStack {
             Text(difficulty.rawValue)
                 .frame(width: 60, height: 60)
-                .background(color)
+                .background(difficulty.color)
                 .cornerRadius(10)
                 .font(.sora(12))
                 .foregroundStyle(.white)

@@ -12,6 +12,7 @@ class DuelRepo: ObservableObject {
     let duelId: String
     let firstIsFirendly: Bool
     
+    private var timer: Timer?
     let startTime: Timestamp
     
     @Published private(set) var won: Bool?
@@ -20,6 +21,7 @@ class DuelRepo: ObservableObject {
     @Published private(set) var enemyData: UserData
     @Published private(set) var secondsSinceStart: Int
     
+
     init(friendlyId: String, duelId: String, firstIsFirendly: Bool, friendlyBoard: SudokuBoardModel, enemyBoard: SudokuBoardModel, enemyData: UserData, startTime: Timestamp) {
         self.friendlyId = friendlyId
         self.duelId = duelId
@@ -72,6 +74,15 @@ class DuelRepo: ObservableObject {
     
     var gameListener: ListenerRegistration?
     func subscribe() async throws {
+        
+        Main {
+            self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
+            self.timer?.invalidate()
+            self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+                guard let self else { return }
+                self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
+            }
+        }
         gameListener?.remove()
         gameListener = try await FirestoreDs.shared.subscribeToDuel(id: duelId) { [weak self] game in
             guard let self else {return}
@@ -79,7 +90,7 @@ class DuelRepo: ObservableObject {
             
             let enemyBoardString = firstIsFirendly ? game.secondPlayerBoard : game.firstPlayerBoard
             if let enemyBoard = SudokuBoardModel(given: game.given, board: enemyBoardString) {
-                self.enemyBoard = enemyBoard
+                Main { self.enemyBoard = enemyBoard }
             }
             
             if let winner = game.winner {
@@ -88,8 +99,11 @@ class DuelRepo: ObservableObject {
         }
     }
     func unsubscribe() {
+        print("unsubscribe")
         gameListener?.remove()
         gameListener = nil
+        timer?.invalidate()
+        timer = nil
     }
     
 }

@@ -30,8 +30,12 @@ class AuthenticationState: ObservableObject {
                 do {
                     let _ = try await user.getIDTokenResult(forcingRefresh: true)
                     await logIn(user: AppUser(user))
-                } catch {
-                    Main { self.unableToContactFirebase = true }
+                } catch let error as NSError {
+                    if error.code == 17020 {
+                        Main { self.unableToContactFirebase = true }
+                    } else {
+                        logOut()
+                    }
                 }
             }
             
@@ -51,15 +55,17 @@ class AuthenticationState: ObservableObject {
         }
     }
     func logIn(user: AppUser) async {
-        Main {
-            self.gettingUserData = true
-            self.user = user
-        }
+        await Main.async { self.user = user }
+        await updateUserData()
+    }
+    func updateUserData() async {
+        guard let user else { return }
+        await Main.async { self.gettingUserData = true }
         if let userData = try? await FirestoreDs.shared.getUserData(uid: user.uid) {
-            await Main.async { self.userData = userData }
-            
-//            let granted = try? await PushNotificationsUtility.requestPermissions()
-            
+            await Main.async {
+                self.userData = userData
+            }
+                        
             if let fcmToken,
                let deviceId = await UIDevice.current.identifierForVendor {
                 try? await FirestoreDs.shared.updateFcmToken(uid: user.uid, fcmToken: fcmToken, deviceId: deviceId)

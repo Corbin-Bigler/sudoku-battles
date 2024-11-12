@@ -93,6 +93,18 @@ struct SudokuBoardModel: Codable {
             notes[y][x].append(key)
         }
     }
+    mutating func enableNote(x: Int, y: Int, key: Int) {
+        if notes[y][x].firstIndex(of: key) != nil {
+            notes[y][x].append(key)
+        }
+    }
+    mutating func disableNote(x: Int, y: Int, key: Int) {
+        if let index = notes[y][x].firstIndex(of: key) {
+            notes[y][x].remove(at: index)
+        }
+    }
+
+
     func notes(x: Int, y: Int) -> [Int] {
         return notes[y][x]
     }

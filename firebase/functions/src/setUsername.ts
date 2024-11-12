@@ -1,4 +1,5 @@
 import * as admin from 'firebase-admin';
+import { Timestamp } from 'firebase-admin/firestore';
 import { onCall } from 'firebase-functions/v2/https'
 
 const db = admin.firestore();
@@ -12,6 +13,7 @@ enum Status {
 }
 
 const usernameRegex = /^[a-zA-Z0-9._-]{4,30}$/;
+const changeUsernameTimeout = 30 * 24 * 60 * 60 * 1000
 
 function response(status: Status): String {
     return JSON.stringify({status: status })
@@ -29,6 +31,22 @@ export const setUsername = onCall(async (request) => {
           
     const users = db.collection("users")
 
+    try {
+        const usernameChangedAt = (await users.doc(uid).get())?.data()?.usernameChangedAt
+        if(usernameChangedAt) {
+            const lastChangedDate = usernameChangedAt.toDate();
+            const currentDate = new Date();
+            const differenceInTime = currentDate.getTime() - lastChangedDate.getTime();
+            const hasBeenOneMonth = differenceInTime >= changeUsernameTimeout;
+
+            if (!hasBeenOneMonth) {
+                return response(Status.InvalidRequest)
+            }
+        }
+    } catch {
+        return response(Status.InvalidRequest)
+    }
+
     const usernameQuery = await users.where('usernameLowercase', '==', username.toLowerCase()).get();
     if (!usernameQuery.empty) return response(Status.UsernameTaken)
   
@@ -36,7 +54,8 @@ export const setUsername = onCall(async (request) => {
     try {
         await reference.set({ 
             "username": username,
-            "usernameLowercase": username.toLowerCase()
+            "usernameLowercase": username.toLowerCase(),
+            "usernameChangedAt": Timestamp.now()
         }, { merge: true });
         return response(Status.Success)
     } catch (error) {

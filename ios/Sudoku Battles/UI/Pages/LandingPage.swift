@@ -78,7 +78,7 @@ struct LandingPage: View {
                         .frame(height: 1)
                         Spacer()
                             .frame(height: 30)
-                        Text("Create an account")
+                        Text("Continue with")
                             .font(.sora(28, .semibold))
                         Spacer()
                             .frame(height: 15)
