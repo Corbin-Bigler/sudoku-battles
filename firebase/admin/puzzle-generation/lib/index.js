@@ -89,6 +89,17 @@ async function generateCount(count) {
     });
     return generations;
 }
+function splitArrayIntoFour(array) {
+    const length = array.length;
+    const quarterSize = Math.ceil(length / 4);
+
+    return [
+        array.slice(0, quarterSize),
+        array.slice(quarterSize, quarterSize * 2),
+        array.slice(quarterSize * 2, quarterSize * 3),
+        array.slice(quarterSize * 3)
+    ];
+}
 (async () => {
     // // await generate()
     // for(let asdf = 0; asdf < 1000; asdf++) {
@@ -116,11 +127,11 @@ async function generateCount(count) {
         else if (difficulty > 900)
             inhuman.push(object);
     }
-    fs_1.default.writeFileSync("./generations/easy.json", JSON.stringify(easy));
-    fs_1.default.writeFileSync("./generations/medium.json", JSON.stringify(medium));
-    fs_1.default.writeFileSync("./generations/hard.json", JSON.stringify(hard));
-    fs_1.default.writeFileSync("./generations/extreme.json", JSON.stringify(extreme));
-    fs_1.default.writeFileSync("./generations/inhuman.json", JSON.stringify(inhuman));
+    // fs_1.default.writeFileSync("./generations/easy.json", JSON.stringify(easy));
+    // fs_1.default.writeFileSync("./generations/medium.json", JSON.stringify(medium));
+    // fs_1.default.writeFileSync("./generations/hard.json", JSON.stringify(hard));
+    // fs_1.default.writeFileSync("./generations/extreme.json", JSON.stringify(extreme));
+    // fs_1.default.writeFileSync("./generations/inhuman.json", JSON.stringify(inhuman));
     //     function areArraysEqual(arr1: number[], arr2: number[]): boolean {
     //         if (arr1.length !== arr2.length) return false;
     //         for (let i = 0; i < arr1.length; i++) {
@@ -146,12 +157,12 @@ async function generateCount(count) {
     //         console.log('All puzzles are unique.');
     //     }    
     // }
-    // const split = splitArrayIntoFour(generations.sort((a, b) => a.difficulty - b.difficulty))
-    // for(let quarter of split) {
-    //     let difficulties = quarter.map((g)=>g.difficulty)
-    //     console.log(`min: ${Math.min(...difficulties)}`)
-    //     console.log(`max: ${Math.max(...difficulties)}`)
-    // }
+    const split = splitArrayIntoFour(generations.sort((a, b) => a.difficulty - b.difficulty))
+    for(let quarter of split) {
+        let difficulties = quarter.map((g)=>g.difficulty)
+        console.log(`min: ${Math.min(...difficulties)}`)
+        console.log(`max: ${Math.max(...difficulties)}`)
+    }
     // const difficulties = generations.map(g => g.difficulty);
     // const mean = difficulties.reduce((acc, val) => acc + val, 0) / difficulties.length;
     // const variance = difficulties.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / difficulties.length;
