@@ -1,11 +1,15 @@
 import SwiftUI
 
 enum Difficulty: String, CaseIterable, Codable {
-    case easy = "Easy"
-    case medium = "Medium"
-    case hard = "Hard"
-    case extreme = "Extreme"
-    case inhuman = "Inhuman"
+    case easy = "easy"
+    case medium = "medium"
+    case hard = "hard"
+    case extreme = "extreme"
+    case inhuman = "inhuman"
+    
+    var title: String {
+        rawValue.capitalized
+    }
     
     var color: Color {
         switch self {

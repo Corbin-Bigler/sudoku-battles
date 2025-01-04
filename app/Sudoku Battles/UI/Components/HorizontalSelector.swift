@@ -39,7 +39,7 @@ struct HorizontalSelector<T: CaseIterable & RawRepresentable>: View where T.AllC
                     
                 }
                 
-                Text(options[localIndex].rawValue)
+                Text(options[localIndex].rawValue.capitalized)
                     .font(.sora(14, .semibold))
                     .id(localIndex)
                     .frame(width: geometry.size.width / 2)

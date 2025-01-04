@@ -1,3 +1,5 @@
+import FirebaseCore
+
 struct VerifyDuelBoardResponse: Codable {
     let status: Status
     

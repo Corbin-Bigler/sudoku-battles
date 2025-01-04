@@ -8,6 +8,8 @@ struct DuelData: Codable {
     let secondPlayerBoard: String
     let given: String
     let startTime: Timestamp
+    let endTime: Timestamp?
+    let difficulty: Difficulty
     let sudoku: DocumentReference
     let winner: DocumentReference?
 }

@@ -76,7 +76,9 @@ class AuthenticationState: ObservableObject {
     
     func logOut() {
         try? auth.signOut()
-        user = nil
-        userData = nil
+        Main {
+            self.user = nil
+            self.userData = nil
+        }
     }
 }

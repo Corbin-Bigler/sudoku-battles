@@ -9,7 +9,6 @@ struct LandingPage: View {
     @State private var username = ""
     @State private var error: String?
     
-
     func submitUsername(user: AppUser) {
         settingUsername = true
         Task {
@@ -50,7 +49,9 @@ struct LandingPage: View {
                         Spacer()
                             .frame(height: 15)
                         InputField(text: $username, placeholder: "Type here...")
+                            .textInputAutocapitalization(.never)
                             .focused($usernameFieldFocused)
+                            .autocorrectionDisabled(true)
                         Spacer()
                             .frame(height: 30)
                         RoundedButton(
@@ -126,7 +127,6 @@ struct LandingPage: View {
                                         }
                                     }
                                 }
-
                             }
                         }
                         .padding(.bottom, 25)

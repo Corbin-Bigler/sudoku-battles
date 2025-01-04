@@ -51,6 +51,41 @@ struct SudokuBoardModel: Codable {
         return boardString
     }
 
+    var correct: Bool {
+        func isValidGroup(_ group: [Int?]) -> Bool {
+            let numbers = group.compactMap { $0 }
+            return Set(numbers).count == numbers.count && numbers.allSatisfy { $0 >= 1 && $0 <= 9 }
+        }
+
+        for row in board {
+            if !isValidGroup(row) {
+                return false
+            }
+        }
+
+        for col in 0..<Self.boardSize {
+            let column = board.map { $0[col] }
+            if !isValidGroup(column) {
+                return false
+            }
+        }
+
+        for gridRow in stride(from: 0, to: Self.boardSize, by: 3) {
+            for gridCol in stride(from: 0, to: Self.boardSize, by: 3) {
+                var subgrid: [Int?] = []
+                for row in gridRow..<gridRow + 3 {
+                    for col in gridCol..<gridCol + 3 {
+                        subgrid.append(board[row][col])
+                    }
+                }
+                if !isValidGroup(subgrid) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+    
     init(given: [[Int?]], board: [[Int?]], notes: [[[Int]]] = emptyNotesArray) {
         self.given = given
         self.board = board

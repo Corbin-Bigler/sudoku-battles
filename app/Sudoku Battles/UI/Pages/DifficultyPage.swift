@@ -6,7 +6,7 @@ struct DifficultyPage: View {
     @State private var savedGame: SoloGame?
     
     var difficulty: Difficulty { Difficulty.allCases[index] }
-    var fileName: String { "sudoku-\(difficulty.rawValue.lowercased())" }
+    var fileName: String { "sudoku-\(difficulty.title.lowercased())" }
 
     var body: some View {
         VStack {
@@ -46,7 +46,7 @@ struct DifficultyPage: View {
                 VStack(spacing: 16) {
                     RoundedButton(label: "New Game", color: .white) {
                 
-                        let filename = "sudoku-\(difficulty.rawValue.lowercased())"
+                        let filename = "sudoku-\(difficulty.title.lowercased())"
                         guard let url = Bundle.main.url(forResource: filename, withExtension: "json") else {
                             print("could not find file \(filename)")
                             return

@@ -13,7 +13,7 @@ struct GameRow: View {
         
     var body: some View {
         HStack {
-            Text(difficulty.rawValue)
+            Text(difficulty.title)
                 .frame(width: 60, height: 60)
                 .background(difficulty.color)
                 .cornerRadius(10)
