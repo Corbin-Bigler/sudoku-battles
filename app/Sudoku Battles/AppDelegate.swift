@@ -14,7 +14,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
 
-        FirebaseConfiguration.shared.setLoggerLevel(.min)
+        FirebaseConfiguration.shared.setLoggerLevel(.debug)
         
         AuthenticationState.shared.initialize()
         
