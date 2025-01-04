@@ -30,8 +30,12 @@ struct IsPresentedOverlayModifier<OverlayContent : View>: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        content
-            .overlay(overlayView())
+        ZStack {
+            content
+            
+            overlayView()
+                .ignoresSafeArea()
+        }
     }
 }
 

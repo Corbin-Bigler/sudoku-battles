@@ -5,9 +5,10 @@ struct DuelPage: View {
     @EnvironmentObject private var authState: AuthenticationState
     @EnvironmentObject private var navState: NavigationState
     @ObservedObject private var duelRepo: DuelRepo
-    @State private var error: Bool = false
+    
+    @State private var showExit = false
+    @State private var error = false
     @State private var timer: Timer?
-    @State private var won: Bool?
     
     let user: AppUser
     let userData: UserData
@@ -17,7 +18,28 @@ struct DuelPage: View {
         self.user = user
         self.userData = userData
     }
+       
+    func formatedTime(seconds totalSeconds: Int) -> String {
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+
+        var text = ""
+        if hours > 0 { text += hours > 9 ? "\(hours):" : "0\(hours):" }
+        text += minutes > 9 ? "\(minutes):" : "0\(minutes):"
+        text += seconds > 9 ? "\(seconds)" : "0\(seconds)"
+        return text
+    }
+    
+    var timerText: String {
+        let totalSeconds = duelRepo.endTime.flatMap { $0.seconds - duelRepo.startTime.seconds } ?? Int64(duelRepo.secondsSinceStart)
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
         
+        return (hours > 0 ? "\(hours)H " : "") + "\(minutes)M \(seconds)S"
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
             HStack {
@@ -31,12 +53,9 @@ struct DuelPage: View {
                 }
                 .frame(width: 40, height: 40)
                 .circleButton {
-                    navState.clear()
+                    showExit = true
                 }
                 Spacer()
-                
-                let minutes = duelRepo.secondsSinceStart / 60
-                let seconds = duelRepo.secondsSinceStart % 60
                 
                 HStack(spacing: 6) {
                     Image("AlarmIcon")
@@ -44,7 +63,7 @@ struct DuelPage: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 18, height: 18)
-                    Text("\(minutes)M \(seconds)S")
+                    Text(timerText)
                         .font(.sora(16, .semibold))
                 }
                 .frame(height: 36)
@@ -83,6 +102,7 @@ struct DuelPage: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 11))
                         }
                         LinearProgress(progress: duelRepo.friendlyBoard.percentageComplete, color: .green400)
+                            .frame(height: 10)
                     }
                     .padding(10)
                     .background(.green400.opacity(0.15))
@@ -102,159 +122,170 @@ struct DuelPage: View {
                                 .clipShape(RoundedRectangle(cornerRadius: 11))
                         }
                         LinearProgress(progress: duelRepo.enemyBoard.percentageComplete, color: .yellow400)
+                            .frame(height: 10)
                     }
                     .padding(10)
                     .background(.yellow400.opacity(0.15))
                     .clipShape(UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 14))
                 }
-//                HStack(spacing: 6) {
-//                    HStack {
-//                        Spacer()
-//                        VStack(spacing: 4) {
-//                            Text(userData.username)
-//                                .font(.sora(13, .semibold))
-//                                .lineLimit(1)
-//                            HStack(spacing: 20) {
-//                                HStack(spacing: 3) {
-//                                    Image("ErrorIcon")
-//                                        .renderingMode(.template)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(width: 15, height: 15)
-//                                        .foregroundStyle(.gray200)
-//                                    Image("ErrorIcon")
-//                                        .renderingMode(.template)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(width: 15, height: 15)
-//                                        .foregroundStyle(.gray200)
-//                                    Image("ErrorIcon")
-//                                        .renderingMode(.template)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(width: 15, height: 15)
-//                                        .foregroundStyle(.gray200)
-//                                }
-//                                Text("100")
-//                                    .font(.sora(14, .semibold))
-//                                    .frame(width: 44, height: 22)
-//                                    .background(.blue400)
-//                                    .foregroundStyle(.white)
-//                                    .clipShape(RoundedRectangle(cornerRadius: 11))
-//                            }
-//                        }
-//                    }
-//                    .frame(maxWidth: .infinity)
-//                    .frame(height: 60)
-//                    .background(.green400.opacity(0.1))
-//                    .clipShape(UnevenRoundedRectangle(bottomTrailingRadius: 30, topTrailingRadius: 30))
-//                    
-//                    HStack {
-//                        ZStack {
-//                            Image("UserProfile")
-//                                .resizable()
-//                                .scaledToFit()
-//                                .frame(width: 56, height: 56)
-//                                .clipShape(Circle())
-//                            CircluarProgress(progress: duelRepo.enemyBoard.percentageComplete, color: .pink400, size: 52, lineWidth: 4)
-//                        }
-//                        .offset(x: 2)
-//                        VStack(spacing: 4) {
-//                            Text(duelRepo.enemyData.username)
-//                                .lineLimit(1)
-//                                .font(.sora(13, .semibold))
-//                            HStack(spacing: 20) {
-//                                HStack(spacing: 3) {
-//                                    Image("ErrorIcon")
-//                                        .renderingMode(.template)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(width: 15, height: 15)
-//                                        .foregroundStyle(.gray200)
-//                                    Image("ErrorIcon")
-//                                        .renderingMode(.template)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(width: 15, height: 15)
-//                                        .foregroundStyle(.gray200)
-//                                    Image("ErrorIcon")
-//                                        .renderingMode(.template)
-//                                        .resizable()
-//                                        .scaledToFit()
-//                                        .frame(width: 15, height: 15)
-//                                        .foregroundStyle(.gray200)
-//                                }
-//                                Text("100")
-//                                    .font(.sora(14, .semibold))
-//                                    .frame(width: 44, height: 22)
-//                                    .background(.pink400)
-//                                    .foregroundStyle(.white)
-//                                    .clipShape(RoundedRectangle(cornerRadius: 11))
-//                            }
-//                        }
-//                        Spacer()
-//                    }
-//                    .frame(maxWidth: .infinity)
-//                    .frame(height: 60)
-//                    .background(.yellow400.opacity(0.1))
-//                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 30))
 
-//                }
                 let binding = Binding(get: {duelRepo.friendlyBoard}, set: {duelRepo.updateFriendlyBoard(board: $0)})
                 SudokuBoard(model: binding)
             }
 
         }
         .foregroundStyle(.black)
-        .navigationBarBackButtonHidden()
-
+        .overlay(isPresented: showExit) {
+            VStack(spacing: 12) {
+                HStack {
+                    Spacer()
+                        .frame(width: 12)
+                    Spacer()
+                    Text("Duel in Progress")
+                        .font(.sora(20, .semibold))
+                    Spacer()
+                    Image("CloseIcon")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 12)
+                }
+                
+                Text("Please be aware that the duel will not stop if you leave. Would you like to forfeit instead?")
+                    .font(.sora(16))
+                    .multilineTextAlignment(.center)
+                       
+                HStack {
+                    RoundedButton(label: "Forfeit", color: .red400, outlined: true) {
+                        navState.clear()
+                    }
+                    RoundedButton(label: "Cancel", color: .blue400) {
+                        showExit = false
+                    }
+                }
+            }
+            .frame(maxWidth: 335)
+            .padding(16)
+            .background(Color.white)
+            .cornerRadius(11)
+            .overlay {
+                RoundedRectangle(cornerRadius: 11)
+                    .stroke(.gray100, lineWidth: 1)
+            }
+            .padding(16)
+        }
+        .overlay(isPresented: duelRepo.won != nil) {
+            let won = duelRepo.won!
             
-//            startTimer()
-//            Task {
-//                do {
-//                    let duelRepo = try await DuelRepo(friendlyId: user.uid, duelId: gameId)
-//                    try await duelRepo.subscribe()
-//                    Main {
-//                        self.duelRepo = duelRepo
-//                        startTimer()
-//                    }
-//                } catch {
-//                    logger.error("Could not load game")
-//                }
-//            }
+            VStack(spacing: 12) {
+                ZStack {
+                    Text(won ? "You Won!" : "You Lost!")
+                        .font(.sora(20, .semibold))
+                    HStack {
+                        Spacer()
+                        
+                        Text("\(duelRepo.difficulty.title)")
+                            .font(.sora(14.85, .semibold))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(duelRepo.difficulty.color)
+                            .cornerRadius(.infinity)
+                            .foregroundStyle(.white)
+                    }
+                }
+                
+                
+                VStack {
+                    let totalSeconds = duelRepo.endTime!.seconds - duelRepo.startTime.seconds
+
+                    Text(formatedTime(seconds: Int(totalSeconds)))
+                        .font(.sora(18, .semibold))
+                    
+                    HStack(spacing: 5) {
+                        VStack(spacing: 5) {
+                            Text("You")
+                                .font(.sora(14, .semibold))
+                            LinearProgress(progress: duelRepo.friendlyBoard.percentageComplete, color: .green400)
+                                .frame(height: 12)
+                            Text("100")
+                                .font(.sora(14, .semibold))
+                                .padding(.horizontal, 7.5)
+                                .padding(.vertical, 2)
+                                .background(.blue400)
+                                .cornerRadius(.infinity)
+                                .foregroundStyle(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(5)
+                        .background(Color.green400.opacity(0.15))
+                        .cornerRadius(9)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 9)
+                                .stroke(Color.green400.opacity(0.6))
+                        }
+                        VStack(spacing: 5) {
+                            Text(duelRepo.enemyData.username)
+                                .font(.sora(14, .semibold))
+                            LinearProgress(progress: duelRepo.enemyBoard.percentageComplete, color: .yellow400)
+                                .frame(height: 12)
+                            Text("100")
+                                .font(.sora(14, .semibold))
+                                .padding(.horizontal, 7.5)
+                                .padding(.vertical, 2)
+                                .background(.blue400)
+                                .cornerRadius(.infinity)
+                                .foregroundStyle(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(5)
+                        .background(Color.yellow400.opacity(0.15))
+                        .cornerRadius(9)
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 9)
+                                .stroke(Color.yellow400.opacity(0.6))
+                        }
+                    }
+                }
+                
+                RoundedButton(label: "OK", color: .blue400) {
+                    navState.clear()
+                }
+            }
+            .padding(16)
+            .background(Color.white)
+            .cornerRadius(11)
+            .overlay {
+                RoundedRectangle(cornerRadius: 11)
+                    .stroke(.gray100, lineWidth: 1)
+            }
+            .padding(16)
+        }
+        .navigationBarBackButtonHidden()
         .onDisappear {
             duelRepo.unsubscribe()
         }
+        
     }
 }
 
-//private struct ActiveGame: View {
-//    let userData: UserData
-//    @EnvironmentObject private var navState: NavigationState
-//    @ObservedObject private var duelRepo: DuelRepo
-//    @State private var notes: Bool = false
-//    @State private var friendlyProfilePicture: Image?
-//    @State private var enemyProfilePicture: Image?
-//    
-//    init(userData: UserData, duelRepo: DuelRepo) {
-//        self.userData = userData
-//        self._duelRepo = ObservedObject(wrappedValue: duelRepo)
-//    }
-//    
-//    var body: some View {
-////        .errorOverlay(
-////            Binding(
-////                get: {
-////                    guard let won = duelRepo.won else { return nil }
-////                    if won { return ErrorOverlayModel(title: "You Won!", body: "You beat \(duelRepo.enemyData.username)") }
-////                    else { return ErrorOverlayModel(title: "You Suck!", body: "You lost to \(duelRepo.enemyData.username)") }
-////                },
-////                set: {
-////                    if $0 == nil {
-////                        navState.clear()
-////                    }
-////                }
-////            )
-////        )
-//    }
-//}
+private struct DuelPagePreview: View {
+    var body: some View {
+        DuelPage(
+            duelRepo: DuelRepo(
+                friendlyId: "mockUid",
+                duelId: "mockGameId",
+                firstIsFirendly: true,
+                friendlyBoard: Mock.sudokuBoard,
+                enemyBoard: Mock.correctSudokuBoard,
+                enemyData: Mock.userData,
+                startTime: Timestamp.init(),
+                won: true
+            ),
+            user: Mock.appUser,
+            userData: Mock.userData
+        )
+    }
+}
+#Preview {
+    DuelPagePreview()
+}

@@ -14,15 +14,18 @@ class DuelRepo: ObservableObject {
     
     private var timer: Timer?
     let startTime: Timestamp
+    private(set) var endTime: Timestamp?
+
+    let difficulty: Difficulty
     
     @Published private(set) var won: Bool?
+    @Published private(set) var incorrect = false
     @Published private(set) var friendlyBoard: SudokuBoardModel
     @Published private(set) var enemyBoard: SudokuBoardModel
     @Published private(set) var enemyData: UserData
     @Published private(set) var secondsSinceStart: Int
-    
 
-    init(friendlyId: String, duelId: String, firstIsFirendly: Bool, friendlyBoard: SudokuBoardModel, enemyBoard: SudokuBoardModel, enemyData: UserData, startTime: Timestamp) {
+    init(friendlyId: String, duelId: String, firstIsFirendly: Bool, friendlyBoard: SudokuBoardModel, enemyBoard: SudokuBoardModel, enemyData: UserData, startTime: Timestamp, won: Bool?) {
         self.friendlyId = friendlyId
         self.duelId = duelId
         self.firstIsFirendly = firstIsFirendly
@@ -30,6 +33,8 @@ class DuelRepo: ObservableObject {
         self.enemyBoard = enemyBoard
         self.enemyData = enemyData
         self.startTime = startTime
+        self.won = won
+        self.difficulty = .extreme
         self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
     }
     init(friendlyId: String, duelId: String) async throws {
@@ -53,6 +58,7 @@ class DuelRepo: ObservableObject {
         guard let friendlyBoard = SudokuBoardModel(given: game.given, board: friendlyBoardString) else { throw AppError.invalidResponse}
         self.friendlyBoard = friendlyBoard
         
+        self.difficulty = game.difficulty
         self.startTime = game.startTime
         self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
     }
@@ -65,8 +71,11 @@ class DuelRepo: ObservableObject {
         if oldBoardString != newBoardString {
             Task {
                 try? await FirestoreDs.shared.updateGameBoard(duelId: duelId, firstPlayer: firstIsFirendly, board: board.boardString)
-                if(friendlyBoard.percentageComplete == 1.0) {
-                    let _ = try? await FunctionsDs.shared.verifyDuelBoard(duelId: duelId)
+                if(friendlyBoard.correct) {
+                    let response = try? await FunctionsDs.shared.verifyDuelBoard(duelId: duelId)
+                    if response?.status == .incorrect  {
+                        Main {  self.incorrect = true }
+                    }
                 }
             }
         }
@@ -94,6 +103,7 @@ class DuelRepo: ObservableObject {
             }
             
             if let winner = game.winner {
+                endTime = game.endTime!
                 won = winner.documentID == friendlyId
             }
         }

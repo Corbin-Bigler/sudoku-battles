@@ -54,6 +54,7 @@ struct PlayPage: View {
             }
             
             VStack(spacing: 22) {
+                Spacer().frame(height: 50)
                 Text("READY TO START PLAYING?")
                     .font(.sora(14, .semibold))
                     .kerning(1.4)
@@ -102,26 +103,26 @@ struct PlayPage: View {
                         )
                     }
 
-                    Button(action: {
-                        navState.navigate { InvitePage() }
-                    }) {
-                        HStack(spacing: 16) {
-                            Image("FriendsIcon")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 50, height: 50)
-                            Text("Challenge Friends")
-                                .font(.sora(22, .bold))
-                        }
-                        .padding(16)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.yellow400)
-                        .cornerRadius(15)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 15)
-                                .stroke(.yellow500, lineWidth: 2)
-                        )
-                    }
+//                    Button(action: {
+//                        navState.navigate { InvitePage() }
+//                    }) {
+//                        HStack(spacing: 16) {
+//                            Image("FriendsIcon")
+//                                .resizable()
+//                                .scaledToFit()
+//                                .frame(width: 50, height: 50)
+//                            Text("Challenge Friends")
+//                                .font(.sora(22, .bold))
+//                        }
+//                        .padding(16)
+//                        .frame(maxWidth: .infinity, alignment: .leading)
+//                        .background(Color.yellow400)
+//                        .cornerRadius(15)
+//                        .overlay(
+//                            RoundedRectangle(cornerRadius: 15)
+//                                .stroke(.yellow500, lineWidth: 2)
+//                        )
+//                    }
                 }
                 .foregroundStyle(.white)
             }

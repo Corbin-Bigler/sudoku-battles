@@ -13,8 +13,8 @@ enum Status {
     InvalidRequest = "invalidRequest",
     Unauthorized = "unauthorized",
 }
-function response(status: Status): String {
-    return JSON.stringify({status: status })
+function response(status: Status, endTime: Date | null = null): String {
+    return JSON.stringify({status, endTime})
 }
   
 export const verifyDuelBoard = onCall(async (request) => {
@@ -44,7 +44,8 @@ export const verifyDuelBoard = onCall(async (request) => {
         if(!solution) throw ""
         
         if(board == solution) {
-            await duelRef.set({winner: users.doc(uid)}, {merge: true})
+            let endTime = new Date()
+            await duelRef.set({winner: users.doc(uid), endTime }, {merge: true})
             return response(Status.Correct)
         } else {
             return response(Status.Incorrect)

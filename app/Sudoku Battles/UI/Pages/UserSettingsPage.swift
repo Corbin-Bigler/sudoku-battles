@@ -4,6 +4,7 @@ struct UserSettingsPage: View {
     @ObservedObject var authState = AuthenticationState.shared
     @EnvironmentObject private var navState: NavigationState
 
+    @State private var deleting = false
     @State private var showDeleteAccountConfirm = false
     @State private var showChangeUsername = false
     @State private var usernameChanging = false
@@ -39,21 +40,22 @@ struct UserSettingsPage: View {
     }
     
     func deleteAccount() {
+        deleting = true
         Task {
             do {
                 let response = try await FunctionsDs.shared.deleteAccount()
-                if response.status != .success {
-                    self.error = "Unable to delete account"
-                } else {
-                    Main {
+                Main {
+                    if response.status != .success {
+                        self.error = "Unable to delete account"
+                    } else {
                         authState.logOut()
                         navState.clear()
                     }
                 }
             } catch {
-                self.error = "Unable to delete account"
+                Main { self.error = "Unable to delete account" }
             }
-            
+            Main { self.deleting = false }
         }
     }
 
@@ -93,7 +95,7 @@ struct UserSettingsPage: View {
                 HStack {
                     Text("Skill Rating:")
                         .font(.sora(16))
-                    Text("1023")
+                    Text("100")
                         .font(.sora(14, .semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
@@ -133,20 +135,20 @@ struct UserSettingsPage: View {
                         }
                         showChangeUsername = true
                     }
-                    HStack(spacing: 15) {
-                        Image("ColorInversionIcon")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 18)
-                            .frame(width: 40, height: 40)
-                            .background(.blue400.opacity(0.1))
-                            .clipShape(Circle())
-                        Text("Dark Theme")
-                            .font(.sora(14, .semibold))
-                        Spacer()
-                        SudokuToggle(isOn: .constant(false))
-                    }
-                    .contentShape(Rectangle())
+//                    HStack(spacing: 15) {
+//                        Image("ColorInversionIcon")
+//                            .resizable()
+//                            .scaledToFit()
+//                            .frame(width: 18)
+//                            .frame(width: 40, height: 40)
+//                            .background(.blue400.opacity(0.1))
+//                            .clipShape(Circle())
+//                        Text("Dark Theme")
+//                            .font(.sora(14, .semibold))
+//                        Spacer()
+//                        SudokuToggle(isOn: .constant(false))
+//                    }
+//                    .contentShape(Rectangle())
                 }
                 .padding(16)
                 .overlay {
@@ -275,7 +277,7 @@ struct UserSettingsPage: View {
             }
             .padding(16)
         }
-        .overlay(isPresented: showDeleteAccountConfirm) {
+        .overlay(isPresented: showDeleteAccountConfirm || deleting) {
             VStack(spacing: 16) {
                 Text("Delete Account")
                     .font(.sora(20, .semibold))

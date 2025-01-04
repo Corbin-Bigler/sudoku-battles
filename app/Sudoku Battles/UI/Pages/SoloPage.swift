@@ -95,7 +95,7 @@ struct SoloPage: View {
                     let formattedSeconds = secondsText.count == 1 ? "0\(secondsText)" : secondsText
                     Text("\(minutesText):\(formattedSeconds)")
                         .font(.sora(32, .semibold))
-                    Text("\(difficulty.rawValue)")
+                    Text("\(difficulty.title)")
                         .font(.sora(14.5, .semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)

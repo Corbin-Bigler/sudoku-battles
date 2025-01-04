@@ -16,12 +16,11 @@ struct LinearProgress: View {
             RoundedRectangle(cornerRadius: .infinity)
                 .fill(.gray100)
             GeometryReader { geometry in
-                RoundedRectangle(cornerRadius: .infinity)
-                    .fill(color)
+                color
                     .frame(width: progress * geometry.size.width)
             }
+            .clipShape(RoundedRectangle(cornerRadius: .infinity))
         }
-        .frame(height: 10)
     }
 }
 

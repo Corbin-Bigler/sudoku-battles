@@ -95,6 +95,7 @@ export const matchmaking = onCall({
             "secondPlayerBoard": randomSudoku,
             "startTime": Timestamp.fromMillis(Timestamp.now().toMillis() + 3000),
             "given": randomSudoku,
+            "difficulty": "easy",
             "sudoku": randomGame.ref
         };
         const newDuelRef = duels.doc();

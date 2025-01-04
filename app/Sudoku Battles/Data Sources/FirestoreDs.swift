@@ -24,19 +24,6 @@ class FirestoreDs {
         self.matchmaking = firestore.collection("matchmaking")
         self.users = firestore.collection("users")
         self.duels = firestore.collection("duels")
-        
-        Task {
-            let ref = firestore.collection("users").document("NcXcNE1Cog6LAkyrgaH05Wf2basH")
-            let snap: DocumentSnapshot?
-            do {
-                snap = try await ref.getDocument()
-            } catch {
-                snap = nil
-                print(error)
-            }
-            print(snap)
-            print(snap)
-        }
     }
     
     func updateFcmToken(uid: String, fcmToken: String, deviceId: UUID) async throws {
