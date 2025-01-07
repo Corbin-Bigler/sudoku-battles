@@ -146,42 +146,56 @@ struct SudokuBoard: View {
                     ForEach(1...5, id: \.self) { number in
                         let toggled = key == number
                         let background = toggled ? Color.blue50 : Color.clear
-                        Text("\(number)")
-                            .font(.sora(24, .semibold))
-                            .foregroundStyle(toggled ? Color.blue400 : Color.black)
-                            .frame(width: 60, height: 60)
-                            .circleButton(outline: toggled ? Color.blue400 : Color.gray100, background: background) {
-                                if let selectedCell {
-                                    if notes {toggleNote(x: selectedCell.x, y: selectedCell.y, value: number)}
-                                    else {setCell(x: selectedCell.x, y: selectedCell.y, value: number)}
-                                } else if toggled {
-                                    key = nil
-                                } else {
-                                    key = number
-                                    search = nil
-                                }
+                        let missing = 9 - model.count(number)
+                        VStack(spacing: 0) {
+                            Text("\(number)")
+                                .offset(y: missing > 0 ? 5 : 0)
+                            if missing > 0 {
+                                Text("\(missing)").font(.sora(11))
                             }
+                        }
+                        .font(.sora(24, .semibold))
+                        .foregroundStyle(toggled ? Color.blue400 : Color.black)
+                        .frame(width: 60, height: 60)
+                        .circleButton(outline: toggled ? Color.blue400 : Color.gray100, background: background) {
+                            if let selectedCell {
+                                if notes {toggleNote(x: selectedCell.x, y: selectedCell.y, value: number)}
+                                else {setCell(x: selectedCell.x, y: selectedCell.y, value: number)}
+                            } else if toggled {
+                                key = nil
+                            } else {
+                                key = number
+                                search = nil
+                            }
+                        }
                     }
                 }
                 HStack(spacing: 15) {
                     ForEach([6,7,8,9], id: \.self) { number in
                         let toggled = key == number
                         let background = toggled ? Color.blue50 : Color.clear
-                        Text("\(number)")
-                            .font(.sora(24, .semibold))
-                            .foregroundStyle(toggled ? Color.blue400 : Color.black)
-                            .frame(width: 60, height: 60)
-                            .circleButton(outline: toggled ? Color.blue400 : Color.gray100, background: background) {
-                                if let selectedCell {
-                                    if notes {toggleNote(x: selectedCell.x, y: selectedCell.y, value: number)}
-                                    else {setCell(x: selectedCell.x, y: selectedCell.y, value: number)}
-                                } else if toggled {
-                                    key = nil
-                                } else {
-                                    key = number
-                                    search = nil
-                                }
+                        let missing = 9 - model.count(number)
+                        VStack(spacing: 0) {
+                            Text("\(number)")
+                                .offset(y: missing > 0 ? 5 : 0)
+                            if missing > 0 {
+                                Text("\(missing)").font(.sora(11))
                             }
+                        }
+                        .font(.sora(24, .semibold))
+                        .foregroundStyle(toggled ? Color.blue400 : Color.black)
+                        .frame(width: 60, height: 60)
+                        .circleButton(outline: toggled ? Color.blue400 : Color.gray100, background: background) {
+                            if let selectedCell {
+                                if notes {toggleNote(x: selectedCell.x, y: selectedCell.y, value: number)}
+                                else {setCell(x: selectedCell.x, y: selectedCell.y, value: number)}
+                            } else if toggled {
+                                key = nil
+                            } else {
+                                key = number
+                                search = nil
+                            }
+                        }
                     }
                     
                     let toggled = key == 0
@@ -219,6 +233,7 @@ struct SudokuBoard: View {
                     Spacer()
                     SudokuToggle(isOn: $notes)
                 }
+                .frame(minWidth: 153)
                 .contentShape(Rectangle())
                 .onTapGesture {
                     notes.toggle()
@@ -307,24 +322,6 @@ private struct SudokuCell: View {
         .background(backgroundColor)
     }
 }
-
-private struct KeyButton: View {
-    var text: String
-    var toggled: Bool
-    var body: some View {
-        Text(text)
-            .font(.title)
-            .foregroundStyle(toggled ? Color.white : Color.blue)
-            .frame(width: 60, height: 60)
-            .background(toggled ? Color.blue : Color.clear)
-            .clipShape(Circle())
-            .overlay {
-                Circle().stroke(lineWidth: 1)
-                    .foregroundStyle(Color.blue)
-            }
-    }
-}
-
 
 private struct Preview: View {
     @State private var board: SudokuBoardModel

@@ -86,6 +86,10 @@ struct SudokuBoardModel: Codable {
         return true
     }
     
+    func count(_ number: Int) -> Int {
+        board.flatMap { $0 }.filter { $0 == number }.count
+    }
+    
     init(given: [[Int?]], board: [[Int?]], notes: [[[Int]]] = emptyNotesArray) {
         self.given = given
         self.board = board

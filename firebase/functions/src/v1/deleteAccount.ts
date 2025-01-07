@@ -5,7 +5,7 @@ const storage = admin.storage().bucket()
 const db = admin.firestore();
 const auth = admin.auth()
 const users = db.collection("users")
-
+ 
 enum Status {
     Success = "success",
     ServerError = "serverError",

@@ -42,7 +42,7 @@ struct DifficultyPage: View {
                 )
                 HorizontalSelector(options: Difficulty.allCases, index: binding)
                 Spacer().frame(height: 30)
-                
+
                 VStack(spacing: 16) {
                     RoundedButton(label: "New Game", color: .white) {
                 
@@ -59,7 +59,8 @@ struct DifficultyPage: View {
                             let puzzles = try decoder.decode([SudokuData].self, from: data)
             
                             let puzzle = puzzles.randomElement()!
-            
+                            
+                            print(puzzle)
                             let model = SudokuBoardModel(given: puzzle.puzzle, board: puzzle.puzzle)!
                             navState.navigate {
                                 SoloPage(difficulty: difficulty, game: SoloGame(model: model, solution: puzzle.solution, seconds: 0))
