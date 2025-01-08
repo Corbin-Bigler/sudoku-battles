@@ -3,6 +3,8 @@ import SwiftUI
 struct UserSettingsPage: View {
     @ObservedObject var authState = AuthenticationState.shared
     @EnvironmentObject private var navState: NavigationState
+    @Environment(\.colorScheme) var colorScheme
+    @ObservedObject var preferencesState = PreferencesState.shared
 
     @State private var deleting = false
     @State private var showDeleteAccountConfirm = false
@@ -58,6 +60,10 @@ struct UserSettingsPage: View {
             Main { self.deleting = false }
         }
     }
+    
+    var backgroundColor: Color { colorScheme == .dark ? .gray900 : .white }
+    var foregroundColor: Color { colorScheme == .dark ? .white : .black }
+    var outlineColor: Color { colorScheme == .dark ? .gray800 : .gray100 }
 
     var body: some View {
         VStack(spacing: 30) {
@@ -68,10 +74,10 @@ struct UserSettingsPage: View {
                         .resizable()
                         .scaledToFit()
                         .frame(height: 12)
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(foregroundColor)
                 }
                 .frame(width: 40, height: 40)
-                .circleButton(outline: .black) {
+                .circleButton(outline: foregroundColor) {
                     navState.navigate(back: 1)
                 }
                 Spacer()
@@ -101,12 +107,13 @@ struct UserSettingsPage: View {
                         .padding(.vertical, 2)
                         .background(.blue400)
                         .cornerRadius(.infinity)
+                        .foregroundStyle(.white)
                 }
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(colorScheme == .dark ? .black : .white)
             .padding(.horizontal, 16)
             .frame(height: 83)
-            .background(.blue900)
+            .background(colorScheme == .dark ? .blue50 : .blue900)
             .cornerRadius(20)
             
             ZStack(alignment: .topLeading) {
@@ -135,20 +142,26 @@ struct UserSettingsPage: View {
                         }
                         showChangeUsername = true
                     }
-//                    HStack(spacing: 15) {
-//                        Image("ColorInversionIcon")
-//                            .resizable()
-//                            .scaledToFit()
-//                            .frame(width: 18)
-//                            .frame(width: 40, height: 40)
-//                            .background(.blue400.opacity(0.1))
-//                            .clipShape(Circle())
-//                        Text("Dark Theme")
-//                            .font(.sora(14, .semibold))
-//                        Spacer()
-//                        SudokuToggle(isOn: .constant(false))
-//                    }
-//                    .contentShape(Rectangle())
+                    
+                    let darkMode = preferencesState.darkMode ?? (colorScheme == .dark)
+                    HStack(spacing: 15) {
+                        Image("ColorInversionIcon")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18)
+                            .frame(width: 40, height: 40)
+                            .background(.blue400.opacity(0.1))
+                            .clipShape(Circle())
+                        Text("Dark Theme")
+                            .font(.sora(14, .semibold))
+                        Spacer()
+                        
+                        SudokuToggle(isOn: .constant(darkMode))
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        preferencesState.setDarkMode(!darkMode)
+                    }
                 }
                 .padding(16)
                 .overlay {
@@ -158,7 +171,7 @@ struct UserSettingsPage: View {
                 Text("General Details")
                     .font(.sora(20, .bold))
                     .padding(.horizontal, 5)
-                    .background(.white)
+                    .background(backgroundColor)
                     .offset(x: 18, y: -13)
             }
             .padding(.top, 13)
@@ -216,7 +229,7 @@ struct UserSettingsPage: View {
                 Text("Account")
                     .font(.sora(20, .bold))
                     .padding(.horizontal, 5)
-                    .background(.white)
+                    .background(backgroundColor)
                     .offset(x: 18, y: -13)
             }
             .padding(.top, 13)
@@ -225,6 +238,7 @@ struct UserSettingsPage: View {
             Spacer()
         }
         .padding(.horizontal, 16)
+        .background(backgroundColor)
         .overlay(isPresented: error != nil) {
             VStack(spacing: 16) {
                 Text("Account Error")
@@ -241,11 +255,11 @@ struct UserSettingsPage: View {
             }
             .frame(maxWidth: 275)
             .padding(16)
-            .background(Color.white)
+            .background(backgroundColor)
             .cornerRadius(11)
             .overlay {
                 RoundedRectangle(cornerRadius: 11)
-                    .stroke(.gray100, lineWidth: 1)
+                    .stroke(outlineColor, lineWidth: 1)
             }
             .padding(16)
         }
@@ -269,11 +283,11 @@ struct UserSettingsPage: View {
                 }
             }
             .padding(16)
-            .background(Color.white)
+            .background(backgroundColor)
             .cornerRadius(11)
             .overlay {
                 RoundedRectangle(cornerRadius: 11)
-                    .stroke(.gray100, lineWidth: 1)
+                    .stroke(outlineColor, lineWidth: 1)
             }
             .padding(16)
         }
@@ -286,7 +300,7 @@ struct UserSettingsPage: View {
                     .multilineTextAlignment(.center)
                                 
                 HStack {
-                    RoundedButton(label: "Cancel", color: .black, outlined: true) {
+                    RoundedButton(label: "Cancel", color: colorScheme == .dark ? .white : .black, outlined: true) {
                         showDeleteAccountConfirm = false
                     }
                     RoundedButton(label: "Delete", color: .red400, loading: usernameChanging) {
@@ -295,11 +309,11 @@ struct UserSettingsPage: View {
                 }
             }
             .padding(16)
-            .background(Color.white)
+            .background(backgroundColor)
             .cornerRadius(11)
             .overlay {
                 RoundedRectangle(cornerRadius: 11)
-                    .stroke(.gray100, lineWidth: 1)
+                    .stroke(outlineColor, lineWidth: 1)
             }
             .padding(16)
         }

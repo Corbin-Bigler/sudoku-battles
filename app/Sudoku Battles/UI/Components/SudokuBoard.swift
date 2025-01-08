@@ -7,7 +7,8 @@ struct SudokuBoard: View {
     @State var search: Int?
     @State var key: Int?
     @State private var notes = false
-    
+    @Environment(\.colorScheme) var colorScheme
+
     init(model: Binding<SudokuBoardModel>) {
         self._model = model
         self.states = [model.wrappedValue]
@@ -42,6 +43,9 @@ struct SudokuBoard: View {
         states.append(newBoard)
         model = newBoard
     }
+    
+    var lightAccent: Color { colorScheme == .dark ? .blue700 : .blue100 }
+    var backgroundColor: Color { colorScheme == .dark ? .gray900 : .white }
 
     var body: some View {
         VStack(spacing: 30) {
@@ -95,46 +99,28 @@ struct SudokuBoard: View {
                                                 }
                                             }
                                         }
-
-//                                        if search != nil && value == search {
-//                                            search = nil
-//                                        } else if isSelected {
-//                                            selectedCell = nil
-//                                        } else if let key, self.notes {
-//                                            if key == 0 { clearNotes(x: column, y: row) }
-//                                            else { toggleNote(x: column, y: row, value: key) }
-//                                        } else if let key, givenValue == nil {
-//                                            setCell(x: column, y: row, value: key == 0 ? nil : key)
-//                                        } else if let value {
-//                                            search = value
-//                                            selectedCell = nil
-//                                            key = nil
-//                                        } else if givenValue == nil, key == nil {
-//                                            selectedCell = (x: column, y: row)
-//                                            search = nil
-//                                        }
                                     }
                                 if column != 8 {
-                                    Color.blue100
+                                    lightAccent
                                         .frame(width: (column + 1) % 3 == 0 ? 2 : 0.75)
                                 }
                             }
                         }
                         if row != 8 {
-                            Color.blue100
+                            lightAccent
                                 .frame(height: (row + 1) % 3 == 0 ? 2 : 0.75)
                         }
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.white)
+                .background(backgroundColor)
                 .clipShape(shape)
                 .shadow(color: .blue400.opacity(0.1), radius: 15, x: -6, y: -6)
                 .shadow(color: .blue400.opacity(0.1), radius: 15, x: 6, y: 6)
                 .overlay {
                     shape
                         .stroke(lineWidth: 2)
-                        .foregroundStyle(Color.blue100)
+                        .foregroundStyle(lightAccent)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -142,10 +128,13 @@ struct SudokuBoard: View {
             .padding(.horizontal, 5)
 
             VStack(spacing: 15) {
+                let toggledBackground: Color = (colorScheme == .dark ? Color.blue400 : Color.blue50)
+                let toggledForeground: Color = (colorScheme == .dark ? Color.white : Color.blue400)
+                
                 HStack(spacing: 15) {
                     ForEach(1...5, id: \.self) { number in
                         let toggled = key == number
-                        let background = toggled ? Color.blue50 : Color.clear
+                        let background = toggled ? toggledBackground : Color.clear
                         let missing = 9 - model.count(number)
                         VStack(spacing: 0) {
                             Text("\(number)")
@@ -155,9 +144,9 @@ struct SudokuBoard: View {
                             }
                         }
                         .font(.sora(24, .semibold))
-                        .foregroundStyle(toggled ? Color.blue400 : Color.black)
+                        .foregroundStyle(toggled ? toggledForeground : (colorScheme == .dark ? .white : .black))
                         .frame(width: 60, height: 60)
-                        .circleButton(outline: toggled ? Color.blue400 : Color.gray100, background: background) {
+                        .circleButton(outline: toggled ? toggledForeground : Color.gray100, background: background) {
                             if let selectedCell {
                                 if notes {toggleNote(x: selectedCell.x, y: selectedCell.y, value: number)}
                                 else {setCell(x: selectedCell.x, y: selectedCell.y, value: number)}
@@ -173,7 +162,7 @@ struct SudokuBoard: View {
                 HStack(spacing: 15) {
                     ForEach([6,7,8,9], id: \.self) { number in
                         let toggled = key == number
-                        let background = toggled ? Color.blue50 : Color.clear
+                        let background = toggled ? toggledBackground : Color.clear
                         let missing = 9 - model.count(number)
                         VStack(spacing: 0) {
                             Text("\(number)")
@@ -183,9 +172,9 @@ struct SudokuBoard: View {
                             }
                         }
                         .font(.sora(24, .semibold))
-                        .foregroundStyle(toggled ? Color.blue400 : Color.black)
+                        .foregroundStyle(toggled ? toggledForeground : (colorScheme == .dark ? .white : .black))
                         .frame(width: 60, height: 60)
-                        .circleButton(outline: toggled ? Color.blue400 : Color.gray100, background: background) {
+                        .circleButton(outline: toggled ? toggledForeground : Color.gray100, background: background) {
                             if let selectedCell {
                                 if notes {toggleNote(x: selectedCell.x, y: selectedCell.y, value: number)}
                                 else {setCell(x: selectedCell.x, y: selectedCell.y, value: number)}
@@ -199,14 +188,14 @@ struct SudokuBoard: View {
                     }
                     
                     let toggled = key == 0
-                    let background = toggled ? Color.red400 : Color.red50
+                    let background = toggled ? Color.red400 : (colorScheme == .dark ? .red800 : .red50)
                     ZStack {
                         Image("CloseIcon")
                             .renderingMode(.template)
                             .resizable()
                             .scaledToFit()
                             .frame(width: 17.5, height: 17.5)
-                            .foregroundStyle(toggled ? Color.white : Color.black)
+                            .foregroundStyle(toggled ? Color.white : (colorScheme == .dark ? .white.opacity(0.3) : .black))
                     }
                     .frame(width: 60, height: 60)
                     .circleButton(outline: Color.clear, background: background) {
@@ -272,21 +261,24 @@ private struct SudokuCell: View {
     let permenant: Bool
     let highlighted: Bool
     
+    @Environment(\.colorScheme) var colorScheme
+    
     private var string: String {
         guard let value else { return "" }
         return "\(value)"
     }
-    private var backgroundColor: Color { permenant ? .blue50.opacity(0.5) : .clear }
+    private var backgroundColor: Color { permenant ? (colorScheme == .dark ? Color.blue900 : Color.blue50).opacity(0.5) : .clear }
     private var foregroundColor: Color {
         if highlighted {return .white}
-        else {return permenant ? .blue900 : .black}
+        else {return permenant ? (colorScheme == .dark ? .blue50 : .blue900) :
+            (colorScheme == .dark ? .white : .black)}
     }
 
     var body: some View {
         ZStack {
             if highlighted {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.blue300)
+                    .fill((colorScheme == .dark ? Color.blue500 : Color.blue300))
                     .padding(3)
             }
             

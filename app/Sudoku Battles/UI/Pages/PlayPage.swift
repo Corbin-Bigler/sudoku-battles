@@ -1,12 +1,16 @@
 import SwiftUI
 
 struct PlayPage: View {
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject private var navState: NavigationState
     @ObservedObject var gamesState = GamesState.shared
 
     let user: AppUser
     let userData: UserData
-
+    
+    var backgroundColor: Color { colorScheme == .dark ? .gray900 : .white }
+    var foregroundColor: Color { colorScheme == .dark ? .white : .black }
+    
     var body: some View {
         VStack(spacing: 40) {
             HStack(spacing: 0) {
@@ -20,10 +24,9 @@ struct PlayPage: View {
                             .resizable()
                             .scaledToFit()
                             .frame(height: 12)
-                            .foregroundStyle(Color.black)
                     }
                     .frame(width: 40, height: 40)
-                    .circleButton(outline: .black) {
+                    .circleButton(outline: foregroundColor) {
                         navState.navigate(back: 1)
                     }
                 }
@@ -34,19 +37,19 @@ struct PlayPage: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 20, height: 20)
-                        .foregroundStyle(.black)
                 }
                 .frame(width: 40, height: 40)
-                .circleButton(outline: .black) {
+                .circleButton(outline: foregroundColor) {
                     navState.navigate { UserSettingsPage(user: user, userData: userData) }
                 }
             }
+            .foregroundStyle(foregroundColor)
             
             ZStack {
                 Circle()
-                    .fill(Color.white)
+                    .fill(backgroundColor)
                     .frame(width: 150, height: 150)
-                    .shadow(color: Color.blue.opacity(0.5), radius: 90)
+                    .shadow(color: Color.blue400, radius: 90)
                 Image("SudokuBattlesLogo")
                     .resizable()
                     .scaledToFit()
@@ -132,6 +135,7 @@ struct PlayPage: View {
         .navigationBarBackButtonHidden()
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(backgroundColor)
         .background {
             Image("SplatterNoise")
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)

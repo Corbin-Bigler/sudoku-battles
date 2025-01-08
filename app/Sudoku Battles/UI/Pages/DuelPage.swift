@@ -5,7 +5,8 @@ struct DuelPage: View {
     @EnvironmentObject private var authState: AuthenticationState
     @EnvironmentObject private var navState: NavigationState
     @ObservedObject private var duelRepo: DuelRepo
-    
+    @Environment(\.colorScheme) var colorScheme
+
     @State private var showExit = false
     @State private var error = false
     @State private var timer: Timer?
@@ -40,6 +41,10 @@ struct DuelPage: View {
         return (hours > 0 ? "\(hours)H " : "") + "\(minutes)M \(seconds)S"
     }
     
+    var backgroundColor: Color { colorScheme == .dark ? .gray900 : .white }
+    var outlineColor: Color { colorScheme == .dark ? .gray800 : .gray100 }
+    var foregroundColor: Color { colorScheme == .dark ? .white : .black }
+    
     var body: some View {
         VStack(spacing: 20) {
             HStack {
@@ -49,10 +54,10 @@ struct DuelPage: View {
                         .resizable()
                         .scaledToFit()
                         .frame(height: 12)
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(foregroundColor)
                 }
                 .frame(width: 40, height: 40)
-                .circleButton {
+                .circleButton(outline: foregroundColor) {
                     showExit = true
                 }
                 Spacer()
@@ -69,7 +74,7 @@ struct DuelPage: View {
                 .frame(height: 36)
                 .padding(.horizontal, 16)
                 .foregroundStyle(.red400)
-                .background(.red50)
+                .background(colorScheme == .dark ? .red800 : .red50)
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .onTapGesture(count: 2) {
                     if(Bundle.main.dev) {
@@ -134,7 +139,6 @@ struct DuelPage: View {
             }
 
         }
-        .foregroundStyle(.black)
         .overlay(isPresented: showExit) {
             VStack(spacing: 12) {
                 HStack {
@@ -166,11 +170,11 @@ struct DuelPage: View {
             }
             .frame(maxWidth: 335)
             .padding(16)
-            .background(Color.white)
+            .background(backgroundColor)
             .cornerRadius(11)
             .overlay {
                 RoundedRectangle(cornerRadius: 11)
-                    .stroke(.gray100, lineWidth: 1)
+                    .stroke(outlineColor, lineWidth: 1)
             }
             .padding(16)
         }
@@ -252,14 +256,15 @@ struct DuelPage: View {
                 }
             }
             .padding(16)
-            .background(Color.white)
+            .background(backgroundColor)
             .cornerRadius(11)
             .overlay {
                 RoundedRectangle(cornerRadius: 11)
-                    .stroke(.gray100, lineWidth: 1)
+                    .stroke(outlineColor, lineWidth: 1)
             }
             .padding(16)
         }
+        .background(backgroundColor)
         .navigationBarBackButtonHidden()
         .onDisappear {
             duelRepo.unsubscribe()

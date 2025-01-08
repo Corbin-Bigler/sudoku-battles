@@ -11,6 +11,8 @@ class UserPreferencesDs {
     
     let userDefaults = UserDefaults.standard
     let savedGameKey = "solo_game_key"
+    let darkModeKey = "dark_mode_key"
+
     let jsonEncoder = JSONEncoder()
     let jsonDecoder = JSONDecoder()
     
@@ -26,5 +28,12 @@ class UserPreferencesDs {
             return try? jsonDecoder.decode(SoloGame.self, from: boardModel)
         }
         return nil
+    }
+    
+    func save(darkMode: Bool) {
+        userDefaults.set(String(darkMode), forKey: darkModeKey)
+    }
+    func getDarkMode() -> Bool? {
+        return userDefaults.string(forKey: darkModeKey).flatMap { Bool($0) }
     }
 }

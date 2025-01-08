@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct LandingPage: View {
+    @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject private var navState: NavigationState
     @EnvironmentObject private var authState: AuthenticationState
     @State private var showEnterUsername = false
@@ -144,10 +145,12 @@ struct LandingPage: View {
                     .resizable()
                     .scaledToFill()
                     .frame(width: geometry.size.width, height: geometry.size.height)
+                
+                let color: Color = colorScheme == .dark ? .blue500 : .blue400
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        Gradient.Stop(color: .blue400.opacity(0), location: 0.0),
-                        Gradient.Stop(color: .blue400, location: 0.73)
+                        Gradient.Stop(color: color.opacity(0), location: 0.0),
+                        Gradient.Stop(color: color, location: 0.73)
                     ]),
                     startPoint: .top,
                     endPoint: .bottom
@@ -162,12 +165,6 @@ struct LandingPage: View {
             .ignoresSafeArea()
             .navigationBarBackButtonHidden()
         }
-//        .errorOverlay(Binding(get: {
-//            guard let error else { return nil }
-//            return ErrorOverlayModel(title: "Error", body: error)
-//        }, set: {
-//            error = $0?.body
-//        }))
     }
 }
 

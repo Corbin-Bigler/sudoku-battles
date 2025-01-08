@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SoloPage: View {
     @EnvironmentObject var navState: NavigationState
+    @Environment(\.colorScheme) var colorScheme
 
     @State private var model: SudokuBoardModel
     private let savedSeconds: Int
@@ -36,7 +37,11 @@ struct SoloPage: View {
         
         if isSolved {timer?.invalidate()}
     }
-    
+
+    var backgroundColor: Color { colorScheme == .dark ? .gray900 : .white }
+    var outlineColor: Color { colorScheme == .dark ? .gray800 : .gray100 }
+    var foregroundColor: Color { colorScheme == .dark ? .white : .black }
+
     var body: some View {
         VStack {
             HStack(spacing: 0) {
@@ -46,10 +51,10 @@ struct SoloPage: View {
                         .resizable()
                         .scaledToFit()
                         .frame(height: 12)
-                        .foregroundStyle(Color.black)
+                        .foregroundStyle(foregroundColor)
                 }
                 .frame(width: 40, height: 40)
-                .circleButton(outline: .black) {
+                .circleButton(outline: foregroundColor) {
                     navState.navigate(back: 1)
                 }
                 Spacer()
@@ -71,7 +76,7 @@ struct SoloPage: View {
             .frame(height: 36)
             .padding(.horizontal, 16)
             .foregroundStyle(.red400)
-            .background(.red50)
+            .background(colorScheme == .dark ? .red800 : .red50)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .onTapGesture(count: 2) {
                 if Bundle.main.dev {
@@ -86,6 +91,7 @@ struct SoloPage: View {
                 .padding(.horizontal, 3)
 
         }
+        .background(backgroundColor)
         .overlay(isPresented: isSolved) {
             VStack(spacing: 16) {
                 Text("Congratulations")
@@ -110,11 +116,11 @@ struct SoloPage: View {
                 }
             }
             .padding(16)
-            .background(Color.white)
+            .background(backgroundColor)
             .cornerRadius(11)
             .overlay {
                 RoundedRectangle(cornerRadius: 11)
-                    .stroke(.gray100, lineWidth: 1)
+                    .stroke(outlineColor, lineWidth: 1)
             }
             .padding(16)
         }
