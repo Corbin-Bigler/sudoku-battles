@@ -1,7 +1,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct ChallengeData: Codable {
+struct Challenge: Codable {
     let inviter: DocumentReference
     let invitee: DocumentReference
     let createdAt: Timestamp

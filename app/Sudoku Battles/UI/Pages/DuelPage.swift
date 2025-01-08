@@ -99,7 +99,7 @@ struct DuelPage: View {
                             Text(userData.username)
                                 .font(.sora(13, .semibold))
                                 .lineLimit(1)
-                            Text("100")
+                            Text(String(userData.ranking))
                                 .font(.sora(14, .semibold))
                                 .frame(width: 44, height: 22)
                                 .background(.blue400)
@@ -116,17 +116,17 @@ struct DuelPage: View {
                         .font(.sora(13, .semibold))
                     VStack {
                         HStack {
-                            Text(duelRepo.enemyData.username)
+                            Text(duelRepo.enemyName)
                                 .font(.sora(13, .semibold))
                                 .lineLimit(1)
-                            Text("100")
+                            Text(String(duelRepo.enemyRanking))
                                 .font(.sora(14, .semibold))
                                 .frame(width: 44, height: 22)
                                 .background(.blue400)
                                 .foregroundStyle(.white)
                                 .clipShape(RoundedRectangle(cornerRadius: 11))
                         }
-                        LinearProgress(progress: duelRepo.enemyBoard.percentageComplete, color: .yellow400)
+                        LinearProgress(progress: duelRepo.enemyPercentage, color: .yellow400)
                             .frame(height: 10)
                     }
                     .padding(10)
@@ -211,7 +211,7 @@ struct DuelPage: View {
                                 .font(.sora(14, .semibold))
                             LinearProgress(progress: duelRepo.friendlyBoard.percentageComplete, color: .green400)
                                 .frame(height: 12)
-                            Text("100")
+                            Text(String(userData.ranking))
                                 .font(.sora(14, .semibold))
                                 .padding(.horizontal, 7.5)
                                 .padding(.vertical, 2)
@@ -228,11 +228,11 @@ struct DuelPage: View {
                                 .stroke(Color.green400.opacity(0.6))
                         }
                         VStack(spacing: 5) {
-                            Text(duelRepo.enemyData.username)
+                            Text(duelRepo.enemyName)
                                 .font(.sora(14, .semibold))
-                            LinearProgress(progress: duelRepo.enemyBoard.percentageComplete, color: .yellow400)
+                            LinearProgress(progress: duelRepo.enemyPercentage, color: .yellow400)
                                 .frame(height: 12)
-                            Text("100")
+                            Text(String(duelRepo.enemyRanking))
                                 .font(.sora(14, .semibold))
                                 .padding(.horizontal, 7.5)
                                 .padding(.vertical, 2)

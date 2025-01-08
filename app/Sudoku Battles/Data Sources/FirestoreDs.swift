@@ -33,14 +33,14 @@ class FirestoreDs {
         
     }
     
-    func subscribeToMatchmaking(id: String, callback: @escaping (MatchmakingData) -> ()) async throws -> ListenerRegistration {
+    func subscribeToMatchmaking(id: String, callback: @escaping (Matchmaking) -> ()) async throws -> ListenerRegistration {
         let matchmakingReference = matchmaking.document(id)
         let matchmakingDocument = try? await matchmakingReference.getDocument()
-        if let data = try? matchmakingDocument?.data(as: MatchmakingData.self) {
+        if let data = try? matchmakingDocument?.data(as: Matchmaking.self) {
             callback(data)
         }
         return matchmakingReference.addSnapshotListener { (documentSnapshot, error) in
-            guard let document = documentSnapshot, document.exists, let data = try? document.data(as: MatchmakingData.self),
+            guard let document = documentSnapshot, document.exists, let data = try? document.data(as: Matchmaking.self),
                   error == nil
             else {
                 return
@@ -110,7 +110,7 @@ class FirestoreDs {
             throw AppError.firebaseConnectionError
         }
     }
-    func getDuel(id: String) async throws -> DuelData? {
+    func getDuel(id: String) async throws -> Duel? {
         var document: DocumentSnapshot!
         do {
             document = try await duels.document(id).getDocument()
@@ -121,18 +121,18 @@ class FirestoreDs {
         }
         
         do {
-            return try document.data(as: DuelData.self)
+            return try document.data(as: Duel.self)
         } catch {
             logger.error("\(error)")
             throw AppError.invalidResponse
         }
     }
-    func subscribeToDuel(id: String, callback: @escaping (DuelData) -> ()) async throws -> ListenerRegistration {
+    func subscribeToDuel(id: String, callback: @escaping (Duel) -> ()) async throws -> ListenerRegistration {
         let gameReference = duels.document(id)
         let gameDocument = try? await gameReference.getDocument()
-        if let data = try? gameDocument?.data(as: DuelData.self) { callback(data) }
+        if let data = try? gameDocument?.data(as: Duel.self) { callback(data) }
         return gameReference.addSnapshotListener { (documentSnapshot, error) in
-            guard let document = documentSnapshot, document.exists, let data = try? document.data(as: DuelData.self),
+            guard let document = documentSnapshot, document.exists, let data = try? document.data(as: Duel.self),
                   error == nil
             else {
                 return
@@ -143,8 +143,8 @@ class FirestoreDs {
     }
     
     func getSolution(duelId: String) async throws -> String? {
-        guard let sudoku = (try? (try? await duels.document(duelId).getDocument())?.data(as: DuelData.self))?.sudoku,
-              let solution = (try? (try? await sudoku.getDocument())?.data(as: SudokuData.self))?.solution
+        guard let sudoku = (try? (try? await duels.document(duelId).getDocument())?.data(as: Duel.self))?.sudoku,
+              let solution = (try? (try? await sudoku.getDocument())?.data(as: Sudoku.self))?.solution
         else {
             return nil
         }

@@ -5,5 +5,5 @@ export type UserData = {
     username: string,
     usernameChangedAt: Timestamp,
     usernameLowercase: string,
-    rating: number
+    ranking: number
 }

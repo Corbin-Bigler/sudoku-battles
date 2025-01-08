@@ -1,7 +1,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct DuelData: Codable {
+struct Duel: Codable {
     let firstPlayer: DocumentReference
     let secondPlayer: DocumentReference
     let firstPlayerBoard: String
@@ -12,4 +12,6 @@ struct DuelData: Codable {
     let difficulty: Difficulty
     let sudoku: DocumentReference
     let winner: DocumentReference?
+    
+    var enemyIsBot: Bool { secondPlayer.parent.collectionID == "bots" }
 }

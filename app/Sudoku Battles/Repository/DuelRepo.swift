@@ -21,11 +21,19 @@ class DuelRepo: ObservableObject {
     @Published private(set) var won: Bool?
     @Published private(set) var incorrect = false
     @Published private(set) var friendlyBoard: SudokuBoardModel
-    @Published private(set) var enemyBoard: SudokuBoardModel
-    @Published private(set) var enemyData: UserData
+    
+    @Published private(set) var enemyBoard: SudokuBoardModel?
+    @Published private(set) var enemyData: UserData?
+    
+    @Published private(set) var botData: Bot?
+    
+    var enemyName: String { enemyData?.username ?? botData!.username }
+    var enemyRanking: Int { enemyData?.ranking ?? botData!.ranking }
+    var enemyPercentage: Double { enemyBoard?.percentageComplete ?? 0 }
+        
     @Published private(set) var secondsSinceStart: Int
 
-    init(friendlyId: String, duelId: String, firstIsFirendly: Bool, friendlyBoard: SudokuBoardModel, enemyBoard: SudokuBoardModel, enemyData: UserData, startTime: Timestamp, won: Bool?) {
+    init(friendlyId: String, duelId: String, firstIsFirendly: Bool, friendlyBoard: SudokuBoardModel, enemyBoard: SudokuBoardModel?, enemyData: UserData?, startTime: Timestamp, won: Bool?) {
         self.friendlyId = friendlyId
         self.duelId = duelId
         self.firstIsFirendly = firstIsFirendly
@@ -37,29 +45,40 @@ class DuelRepo: ObservableObject {
         self.difficulty = .extreme
         self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
     }
+    init(friendlyId: String, duelId: String, firstIsFirendly: Bool, friendlyBoard: SudokuBoardModel, botData: Bot?, startTime: Timestamp, won: Bool?) {
+        self.friendlyId = friendlyId
+        self.duelId = duelId
+        self.firstIsFirendly = firstIsFirendly
+        self.friendlyBoard = friendlyBoard
+        self.botData = botData
+        self.startTime = startTime
+        self.won = won
+        self.difficulty = .extreme
+        self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
+    }
     init(friendlyId: String, duelId: String) async throws {
         self.friendlyId = friendlyId
         self.duelId = duelId
-        guard let game = try await FirestoreDs.shared.getDuel(id: duelId) else { throw AppError.invalidResponse }
+        guard let duel = try await FirestoreDs.shared.getDuel(id: duelId) else { throw AppError.invalidResponse }
         
-        if friendlyId == game.firstPlayer.documentID { firstIsFirendly = true }
-        else if (friendlyId == game.secondPlayer.documentID) { firstIsFirendly = false }
+        if friendlyId == duel.firstPlayer.documentID { firstIsFirendly = true }
+        else if (friendlyId == duel.secondPlayer.documentID) { firstIsFirendly = false }
         else { throw AppError.invalidResponse }
         
-        let enemyUid = firstIsFirendly ? game.secondPlayer.documentID : game.firstPlayer.documentID
+        let enemyUid = firstIsFirendly ? duel.secondPlayer.documentID : duel.firstPlayer.documentID
         guard let enemyData = try await FirestoreDs.shared.getUserData(uid: enemyUid) else { throw AppError.invalidResponse }
         self.enemyData = enemyData
         
-        let enemyBoardString = firstIsFirendly ? game.secondPlayerBoard : game.firstPlayerBoard
-        guard let enemyBoard = SudokuBoardModel(given: game.given, board: enemyBoardString) else { throw AppError.invalidResponse}
+        let enemyBoardString = firstIsFirendly ? duel.secondPlayerBoard : duel.firstPlayerBoard
+        guard let enemyBoard = SudokuBoardModel(given: duel.given, board: enemyBoardString) else { throw AppError.invalidResponse}
         self.enemyBoard = enemyBoard
         
-        let friendlyBoardString = firstIsFirendly ? game.firstPlayerBoard : game.secondPlayerBoard
-        guard let friendlyBoard = SudokuBoardModel(given: game.given, board: friendlyBoardString) else { throw AppError.invalidResponse}
+        let friendlyBoardString = firstIsFirendly ? duel.firstPlayerBoard : duel.secondPlayerBoard
+        guard let friendlyBoard = SudokuBoardModel(given: duel.given, board: friendlyBoardString) else { throw AppError.invalidResponse}
         self.friendlyBoard = friendlyBoard
         
-        self.difficulty = game.difficulty
-        self.startTime = game.startTime
+        self.difficulty = duel.difficulty
+        self.startTime = duel.startTime
         self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
     }
     

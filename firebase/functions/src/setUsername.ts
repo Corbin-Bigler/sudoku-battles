@@ -52,11 +52,14 @@ export const setUsername = onCall(async (request) => {
   
     const reference = users.doc(uid);
     try {
-        await reference.set({ 
+        let data: any = { 
             "username": username,
             "usernameLowercase": username.toLowerCase(),
             "usernameChangedAt": Timestamp.now()
-        }, { merge: true });
+        }
+        if(!(await reference.get()).exists) data.ranking = 100
+        
+        await reference.set(data, { merge: true });
         return response(Status.Success)
     } catch (error) {
         return response(Status.ServerError)

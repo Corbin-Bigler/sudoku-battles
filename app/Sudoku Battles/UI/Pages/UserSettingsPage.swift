@@ -103,7 +103,7 @@ struct UserSettingsPage: View {
                 HStack {
                     Text("Skill Rating:")
                         .font(.sora(16))
-                    Text(String(userData.rating))
+                    Text(String(userData.ranking))
                         .font(.sora(14, .semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)

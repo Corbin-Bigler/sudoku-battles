@@ -4,12 +4,12 @@ import FirebaseFirestore
 struct UserData: Codable {
     let username: String
     let usernameChangedAt: Timestamp?
-    let rating: Int
+    let ranking: Int
     
-    init(username: String, rating: Int) {
+    init(username: String, ranking: Int) {
         self.username = username
         self.usernameChangedAt = nil
-        self.rating = rating
+        self.ranking = ranking
     }
   
     var oneMonthSinceUsernameChange: Bool {

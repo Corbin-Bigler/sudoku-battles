@@ -56,7 +56,7 @@ struct DifficultyPage: View {
                             let data = try Data(contentsOf: url)
             
                             let decoder = JSONDecoder()
-                            let puzzles = try decoder.decode([SudokuData].self, from: data)
+                            let puzzles = try decoder.decode([Sudoku].self, from: data)
             
                             let puzzle = puzzles.randomElement()!
                             
