@@ -11,22 +11,20 @@ struct SudokuBattlesApp: App {
     var body: some Scene {
         WindowGroup {
             let finalColorScheme = preferencesState.darkMode.flatMap { $0 ? .dark : .light } ?? colorScheme
-            Group {
-                if !authState.validating && !authState.unableToContactFirebase {
-                    NavigationContainer()
-                        .environmentObject(authState)
-                        .preferredColorScheme(finalColorScheme)
-                } else {
-                    LaunchPage()
-                        .alert("Network Error", isPresented: $authState.unableToContactFirebase) {
-                            Button("Retry", role: .cancel) {
-                                authState.initialize()
-                            }
-                        } message: {
-                            Text("Unable to connect to server.")
+            if !authState.validating && !authState.unableToContactFirebase {
+                NavigationContainer()
+                    .environmentObject(authState)
+                    .preferredColorScheme(finalColorScheme)
+            } else {
+                LaunchPage()
+                    .alert("Network Error", isPresented: $authState.unableToContactFirebase) {
+                        Button("Retry", role: .cancel) {
+                            authState.initialize()
                         }
-                        .preferredColorScheme(finalColorScheme)
-                }
+                    } message: {
+                        Text("Unable to connect to server.")
+                    }
+                    .preferredColorScheme(finalColorScheme)
             }
         }
     }

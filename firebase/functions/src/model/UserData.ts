@@ -4,5 +4,6 @@ export type UserData = {
     fcmTokens: { [key: string]: string },
     username: string,
     usernameChangedAt: Timestamp,
-    usernameLowercase: string
+    usernameLowercase: string,
+    rating: number
 }

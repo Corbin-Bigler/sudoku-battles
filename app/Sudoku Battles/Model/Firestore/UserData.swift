@@ -3,13 +3,13 @@ import FirebaseFirestore
 
 struct UserData: Codable {
     let username: String
-    let profilePicture: String?
     let usernameChangedAt: Timestamp?
+    let rating: Int
     
-    init(username: String, profilePicture: String? = nil) {
+    init(username: String, rating: Int) {
         self.username = username
-        self.profilePicture = profilePicture
         self.usernameChangedAt = nil
+        self.rating = rating
     }
   
     var oneMonthSinceUsernameChange: Bool {

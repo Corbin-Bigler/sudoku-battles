@@ -15,9 +15,11 @@ struct UserSettingsPage: View {
     @State private var error: String?
     
     let user: AppUser
-    
+    let userData: UserData
+
     init(user: AppUser, userData: UserData) {
         self.user = user
+        self.userData = userData
         self._newUsername = State(initialValue: userData.username)
     }
     
@@ -101,7 +103,7 @@ struct UserSettingsPage: View {
                 HStack {
                     Text("Skill Rating:")
                         .font(.sora(16))
-                    Text("100")
+                    Text(String(userData.rating))
                         .font(.sora(14, .semibold))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)

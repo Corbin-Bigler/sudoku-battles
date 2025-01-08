@@ -2,7 +2,7 @@ import FirebaseFirestore
 
 struct Mock {
     static let appUser = AppUser(uid: "mockUid")
-    static let userData = UserData(username: "mockUsername")
+    static let userData = UserData(username: "mockUsername", rating: 1234)
     static let sudokuBoard = SudokuBoardModel(
         given: "060008040004306020001900050000203000000000789605809200000090300000000600276400000",
         board: "060008040004306020001900050000203000000000789605809200000090300000000600276400000"
