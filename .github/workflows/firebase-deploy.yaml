@@ -24,4 +24,6 @@ jobs:
     - name: Deploy to Firebase
       env:
         FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-      run: firebase deploy --token "$FIREBASE_TOKEN"
+      run: |
+      cd firebase
+      firebase deploy --token "$FIREBASE_TOKEN"
