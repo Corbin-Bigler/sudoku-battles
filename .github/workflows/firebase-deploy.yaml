@@ -19,7 +19,9 @@ jobs:
         node-version: '22'
 
     - name: Install Dependencies
-      run: npm install
+      run: |
+        cd firebase
+        npm install
 
     - name: Deploy to Firebase
       env:
