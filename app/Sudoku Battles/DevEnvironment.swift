@@ -6,5 +6,5 @@
 //
 
 struct DevEnvironment {
-    static let emulatorHost = "192.168.1.6"
+    static let emulatorHost = "192.168.1.13"
 }

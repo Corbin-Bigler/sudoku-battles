@@ -59,7 +59,7 @@ class FirestoreDs {
             try await users.document(uid).updateData(["profilePicture" : path])
         } catch {
             logger.error("\(error)")
-            throw AppError.networkError
+            throw SudokuError.networkError
         }
     }
     func getUserData(uid: String) async throws -> UserData? {
@@ -69,14 +69,14 @@ class FirestoreDs {
             if !document.exists { return nil }
         } catch {
             logger.error("\(error)")
-            throw AppError.networkError
+            throw SudokuError.networkError
         }
         
         do {
             return try document.data(as: UserData.self)
         } catch {
             logger.error("\(error)")
-            throw AppError.invalidResponse
+            throw SudokuError.invalidResponse
         }
     }
     func getUserDatas(usernamePartial: String) async throws -> [String : UserData]? {
@@ -89,7 +89,7 @@ class FirestoreDs {
                 .getDocuments()
         } catch {
             logger.error("\(error)")
-            throw AppError.networkError
+            throw SudokuError.networkError
         }
 
         var results: [String: UserData] = [:]
@@ -107,7 +107,7 @@ class FirestoreDs {
             try await duels.document(duelId).updateData([field : board])
         } catch {
             logger.error("\(error)")
-            throw AppError.networkError
+            throw SudokuError.networkError
         }
     }
     func getDuel(id: String) async throws -> Duel? {
@@ -117,14 +117,14 @@ class FirestoreDs {
             if !document.exists { return nil }
         } catch {
             logger.error("\(error)")
-            throw AppError.networkError
+            throw SudokuError.networkError
         }
         
         do {
             return try document.data(as: Duel.self)
         } catch {
             logger.error("\(error)")
-            throw AppError.invalidResponse
+            throw SudokuError.invalidResponse
         }
     }
     func subscribeToDuel(id: String, callback: @escaping (Duel) -> ()) async throws -> ListenerRegistration {

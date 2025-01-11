@@ -80,15 +80,15 @@ class AppleAuthDs: NSObject, ObservableObject, ASAuthorizationControllerDelegate
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
         if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
             guard let nonce = currentNonce else  {
-                continuation?.resume(throwing: AppError.unauthorized)
+                continuation?.resume(throwing: SudokuError.unauthorized)
                 return
             }
             guard let appleIDToken = appleIDCredential.identityToken else {
-                continuation?.resume(throwing: AppError.unauthorized)
+                continuation?.resume(throwing: SudokuError.unauthorized)
                 return
             }
             guard let idTokenString = String(data: appleIDToken, encoding: .utf8) else {
-                continuation?.resume(throwing: AppError.unauthorized)
+                continuation?.resume(throwing: SudokuError.unauthorized)
                 return
             }
             let credential = OAuthProvider.credential(providerID: AuthProviderID.apple, idToken: idTokenString, rawNonce: nonce)

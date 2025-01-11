@@ -9,16 +9,21 @@ struct LandingPage: View {
     @State private var authenticating = false
     @FocusState private var usernameFieldFocused
     @State private var username = ""
-    @State private var error: AppError?
+    
+    @State private var status: SetUsernameStatus?
+    @State private var error: SudokuError?
     
     func submitUsername(user: AppUser) {
         settingUsername = true
         Task {
             do {
-                _ = try await FunctionsDs.shared.setUsername(username: username)
+                let response = try await FunctionsDs.shared.setUsername(username: username)
+                await AuthenticationState.shared.logIn(user: user)
+                print(response)
+                if response.status != .success { status = response.status }
             } catch {
                 logger.error("\(error)")
-                if let error = error as? AppError { self.error = error }
+                if let error = error as? SudokuError { self.error = error }
                 else { self.error = .unknown }
             }
             Main { settingUsername = false }
@@ -102,7 +107,7 @@ struct LandingPage: View {
                                             }
                                         } catch {
                                             logger.error("\(error)")
-                                            if let error = error as? AppError { self.error = error }
+                                            if let error = error as? SudokuError { self.error = error }
                                             else { self.error = .unknown }
                                         }
                                     }
@@ -132,7 +137,7 @@ struct LandingPage: View {
                                             }
                                         } catch {
                                             logger.error("\(error)")
-                                            if let error = error as? AppError { self.error = error }
+                                            if let error = error as? SudokuError { self.error = error }
                                             else { self.error = .unknown }
                                         }
                                     }
@@ -153,6 +158,21 @@ struct LandingPage: View {
             Button("Ok", role: .cancel) {}
         } message: {
             Text("Unable to connect to server.")
+        }
+        .alert("Invalid Username", isPresented: Binding(get: {status == .invalidUsername}, set: {_ in status = nil})) {
+            Button("Ok", role: .cancel) {}
+        } message: {
+            Text("This username is invalid.")
+        }
+        .alert("Username Taken", isPresented: Binding(get: {status == .usernameTaken}, set: {_ in status = nil})) {
+            Button("Ok", role: .cancel) {}
+        } message: {
+            Text("This username is taken.")
+        }
+        .alert("Server Error", isPresented: Binding(get: {status == .serverError}, set: {_ in status = nil})) {
+            Button("Ok", role: .cancel) {}
+        } message: {
+            Text("An server error has occured. Please try again later.")
         }
         .background {
             GeometryReader { geometry in
@@ -186,6 +206,7 @@ struct LandingPage: View {
         }
         .overlay(isPresented: authenticating) {
             ProgressView()
+                .preferredColorScheme(.light)
         }
     }
 }

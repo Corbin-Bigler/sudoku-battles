@@ -4,8 +4,9 @@ export type Duel = {
     firstPlayer: DocumentReference,
     firstPlayerBoard: string,
     given: string,
-    secondPlayer: DocumentReference,
-    secondPlayerBoard: string,
+    secondPlayer: DocumentReference | null,
+    secondPlayerBoard: string | null,
     startTime: Timestamp,
-    sudoku: DocumentReference
+    sudoku: DocumentReference,
+    botEndTime: Timestamp
 }

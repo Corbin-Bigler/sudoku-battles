@@ -119,12 +119,14 @@ struct DuelPage: View {
                             Text(duelRepo.enemyName)
                                 .font(.sora(13, .semibold))
                                 .lineLimit(1)
-                            Text(String(duelRepo.enemyRanking))
-                                .font(.sora(14, .semibold))
-                                .frame(width: 44, height: 22)
-                                .background(.blue400)
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 11))
+                            if let enemyRanking = duelRepo.enemyRanking{
+                                Text(String(enemyRanking))
+                                    .font(.sora(14, .semibold))
+                                    .frame(width: 44, height: 22)
+                                    .background(.blue400)
+                                    .foregroundStyle(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 11))
+                            }
                         }
                         LinearProgress(progress: duelRepo.enemyPercentage, color: .yellow400)
                             .frame(height: 10)

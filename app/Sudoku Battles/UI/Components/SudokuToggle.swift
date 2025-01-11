@@ -6,8 +6,8 @@ struct SudokuToggle: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 15)
-                .fill(isOn ? Color.blue400 : Color.blue400.opacity(0.1))
-                .animation(.easeInOut(duration: 0.3), value: isOn)
+                .fill(isOn ? Color.blue400 : Color.blue400.opacity(0.2))
+                .animation(.easeInOut(duration: 0.1), value: isOn)
                 .frame(width: 60, height: 30)
 
             HStack {
@@ -15,7 +15,7 @@ struct SudokuToggle: View {
                 Circle()
                     .frame(width: 24, height: 24)
                     .foregroundColor(isOn ? Color.white : Color.blue400)
-                    .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isOn)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0.1), value: isOn)
                 if !isOn { Spacer() }
             }
             .padding(3)

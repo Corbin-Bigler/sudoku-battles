@@ -1,9 +1,3 @@
-//
-//  UserPreferencesDs.swift
-//  Sudoku Battles
-//
-//  Created by Corbin Bigler on 11/2/24.
-//
 import SwiftUI
 
 class UserPreferencesDs {
@@ -35,5 +29,8 @@ class UserPreferencesDs {
     }
     func getDarkMode() -> Bool? {
         return userDefaults.string(forKey: darkModeKey).flatMap { Bool($0) }
+    }
+    func deleteDarkMode() {
+        userDefaults.removeObject(forKey: darkModeKey)
     }
 }

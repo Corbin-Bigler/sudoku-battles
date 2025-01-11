@@ -2,7 +2,7 @@ import admin from "firebase-admin";
 import fs from "fs";
 
 const serviceAccount = JSON.parse(
-    fs.readFileSync("../../secret/sudoku-battles-firebase-adminsdk-ixggv-9b3dbdc0ad.json")
+    fs.readFileSync("/Users/corbinbigler/Keys/sudoku-battles-firebase-adminsdk-ixggv-4622ae599e.json")
 );
 
 admin.initializeApp({
@@ -10,6 +10,14 @@ admin.initializeApp({
 });
 
 const firestore = admin.firestore();
+
+if (process.env.FIRESTORE_EMULATOR_HOST) {
+    console.log(`Using Firestore Emulator at ${process.env.FIRESTORE_EMULATOR_HOST}`);
+    firestore.settings({
+        host: process.env.FIRESTORE_EMULATOR_HOST,
+        ssl: false,
+    });
+}
 
 async function batchUploadToFirestore(collectionName, array) {
     const collectionRef = firestore.collection(collectionName);
@@ -33,7 +41,7 @@ async function batchUploadToFirestore(collectionName, array) {
 }
 
 await batchUploadToFirestore("sudoku-easy", JSON.parse(fs.readFileSync('../generator/sudoku-easy.json')));
-// await batchUploadToFirestore("sudoku-extreme", JSON.parse(fs.readFileSync('../generator/sudoku-extreme.json')));
-// await batchUploadToFirestore("sudoku-hard", JSON.parse(fs.readFileSync('../generator/sudoku-hard.json')));
-// await batchUploadToFirestore("sudoku-inhuman", JSON.parse(fs.readFileSync('../generator/sudoku-inhuman.json')));
-// await batchUploadToFirestore("sudoku-medium", JSON.parse(fs.readFileSync('../generator/sudoku-medium.json')));
+await batchUploadToFirestore("sudoku-extreme", JSON.parse(fs.readFileSync('../generator/sudoku-extreme.json')));
+await batchUploadToFirestore("sudoku-hard", JSON.parse(fs.readFileSync('../generator/sudoku-hard.json')));
+await batchUploadToFirestore("sudoku-inhuman", JSON.parse(fs.readFileSync('../generator/sudoku-inhuman.json')));
+await batchUploadToFirestore("sudoku-medium", JSON.parse(fs.readFileSync('../generator/sudoku-medium.json')));

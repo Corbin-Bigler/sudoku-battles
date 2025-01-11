@@ -10,7 +10,7 @@ struct SudokuBattlesApp: App {
     
     var body: some Scene {
         WindowGroup {
-            let finalColorScheme = preferencesState.darkMode.flatMap { $0 ? .dark : .light } ?? colorScheme
+            let finalColorScheme: ColorScheme? = preferencesState.darkMode.flatMap { $0 ? .dark : .light }
             if !authState.validating {
                 NavigationContainer()
                     .environmentObject(authState)

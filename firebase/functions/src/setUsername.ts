@@ -1,37 +1,30 @@
 import * as admin from 'firebase-admin';
 import { Timestamp } from 'firebase-admin/firestore';
 import { onCall } from 'firebase-functions/v2/https'
+import { SetUsernameStatus } from './model/SetUsernameStatus';
 
 const db = admin.firestore();
 
-enum Status {
-    Success = "success",
-    ServerError = "serverError",
-    InvalidRequest = "invalidRequest",
-    Unauthorized = "unauthorized",
-    UsernameTaken = "usernameTaken"
-}
-
-const usernameRegex = /^[a-zA-Z0-9._-]{4,30}$/;
+const usernameRegex = /^[a-zA-Z0-9._'’-]{4,30}$/;
 const changeUsernameTimeout = 30 * 24 * 60 * 60 * 1000
 
-function response(status: Status): String {
-    return JSON.stringify({status: status })
+function response(status: SetUsernameStatus): String {
+    return JSON.stringify({status})
 }
   
 export const setUsername = onCall(async (request) => {
     const uid = request.auth?.uid;
-    if(!uid) return response(Status.Unauthorized)
-
+    if(!uid) return response(SetUsernameStatus.Unauthorized)
+    
     const data = request.data;
-
+    console.log(data)
     const username: string | null = typeof data.username === 'string' ? data.username.trim() : null;
-    if(!username) return response(Status.InvalidRequest);
-    if(!usernameRegex.test(username)) return response(Status.InvalidRequest)
-          
+    if(!username) return response(SetUsernameStatus.InvalidUsername);
+    if(!usernameRegex.test(username)) return response(SetUsernameStatus.InvalidUsername)
+
     const users = db.collection("users")
 
-    try {
+    try { 
         const usernameChangedAt = (await users.doc(uid).get())?.data()?.usernameChangedAt
         if(usernameChangedAt) {
             const lastChangedDate = usernameChangedAt.toDate();
@@ -40,18 +33,20 @@ export const setUsername = onCall(async (request) => {
             const hasBeenOneMonth = differenceInTime >= changeUsernameTimeout;
 
             if (!hasBeenOneMonth) {
-                return response(Status.InvalidRequest)
+                return response(SetUsernameStatus.InvalidUsername)
             }
         }
     } catch {
-        return response(Status.InvalidRequest)
+        return response(SetUsernameStatus.InvalidUsername)
     }
-
-    const usernameQuery = await users.where('usernameLowercase', '==', username.toLowerCase()).get();
-    if (!usernameQuery.empty) return response(Status.UsernameTaken)
-  
-    const reference = users.doc(uid);
+ 
     try {
+        const usernameQuery = await users.where('usernameLowercase', '==', username.toLowerCase()).get();
+        console.log(usernameQuery.empty)
+        if (!usernameQuery.empty) return response(SetUsernameStatus.UsernameTaken)
+        
+        const reference = users.doc(uid);
+
         let data: any = { 
             "username": username,
             "usernameLowercase": username.toLowerCase(),
@@ -60,8 +55,8 @@ export const setUsername = onCall(async (request) => {
         if(!(await reference.get()).exists) data.ranking = 100
         
         await reference.set(data, { merge: true });
-        return response(Status.Success)
+        return response(SetUsernameStatus.Success)
     } catch (error) {
-        return response(Status.ServerError)
+        return response(SetUsernameStatus.ServerError)
     }
 })

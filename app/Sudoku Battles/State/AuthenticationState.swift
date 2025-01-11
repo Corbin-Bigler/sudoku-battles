@@ -48,13 +48,17 @@ class AuthenticationState: ObservableObject {
     
     func logIn(credential: AuthCredential) async throws {
         do {
-            
+            var authData: AuthDataResult? = nil
             try await TimeoutTask(seconds: 5) {
-                let authData = try await self.auth.signIn(with: credential)
+                authData = try await self.auth.signIn(with: credential)
+            }
+            if let authData {
                 await self.logIn(user: AppUser(authData.user))
+            } else {
+                throw SudokuError.networkError
             }
         } catch {
-            throw AppError.networkError
+            throw SudokuError.networkError
         }
     }
 
@@ -80,6 +84,7 @@ class AuthenticationState: ObservableObject {
     
     func logOut() {
         try? auth.signOut()
+        UserPreferencesDs.shared.deleteDarkMode()
         Main {
             self.user = nil
             self.userData = nil

@@ -44,6 +44,8 @@ struct SudokuBoard: View {
         model = newBoard
     }
     
+    var outerAccent: Color { colorScheme == .dark ? .blue500 : .blue300 }
+    var thickAccent: Color { colorScheme == .dark ? .blue600 : .blue200 }
     var lightAccent: Color { colorScheme == .dark ? .blue700 : .blue100 }
     var backgroundColor: Color { colorScheme == .dark ? .gray900 : .white }
 
@@ -101,14 +103,14 @@ struct SudokuBoard: View {
                                         }
                                     }
                                 if column != 8 {
-                                    lightAccent
-                                        .frame(width: (column + 1) % 3 == 0 ? 2 : 0.75)
+                                    if (column + 1) % 3 == 0 { thickAccent.frame(width: 2) }
+                                    else { lightAccent.frame(width: 0.75) }
                                 }
                             }
                         }
                         if row != 8 {
-                            lightAccent
-                                .frame(height: (row + 1) % 3 == 0 ? 2 : 0.75)
+                            if (row + 1) % 3 == 0 { thickAccent.frame(height: 2) }
+                            else { lightAccent.frame(height: 0.75) }
                         }
                     }
                 }
@@ -120,7 +122,7 @@ struct SudokuBoard: View {
                 .overlay {
                     shape
                         .stroke(lineWidth: 2)
-                        .foregroundStyle(lightAccent)
+                        .foregroundStyle(outerAccent)
                 }
             }
             .frame(maxWidth: .infinity)
@@ -267,19 +269,28 @@ private struct SudokuCell: View {
         guard let value else { return "" }
         return "\(value)"
     }
-    private var backgroundColor: Color { permenant ? (colorScheme == .dark ? Color.blue900 : Color.blue50).opacity(0.5) : .clear }
+    private var backgroundColor: Color {
+        permenant ? (colorScheme == .dark ? Color.blue900 : Color.blue50).opacity(0.5) : .clear
+    }
     private var foregroundColor: Color {
-        if highlighted {return .white}
-        else {return permenant ? (colorScheme == .dark ? .blue50 : .blue900) :
-            (colorScheme == .dark ? .white : .black)}
+        if highlighted {
+            return .white
+        }
+        else {
+            return permenant ? (colorScheme == .dark ? .blue50 : .blue900) :(colorScheme == .dark ? .white : .black)
+        }
+    }
+    private var highlightColor: Color {
+        if !notes.isEmpty {  return (colorScheme == .dark ? Color.blue600 : Color.blue200) }
+        return (colorScheme == .dark ? Color.blue500 : Color.blue300)
     }
 
     var body: some View {
         ZStack {
             if highlighted {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill((colorScheme == .dark ? Color.blue500 : Color.blue300))
-                    .padding(3)
+                    .fill(highlightColor)
+                    .padding(2)
             }
             
             Text(string)

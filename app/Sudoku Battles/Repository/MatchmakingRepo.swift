@@ -36,7 +36,7 @@ class MatchmakingRepo {
                 case .unauthorized: return
                 case .serverError: return
                 case .unmatched:
-                    if let matchmakingId = results.matchmaking, matchmakingListener == nil {
+                    if let matchmakingId = results.data?.matchmaking, matchmakingListener == nil {
                         matchmakingListener = try await FirestoreDs.shared.subscribeToMatchmaking(id: matchmakingId) { [weak self] data in
                             guard let self else {return}
                             logger.trace("\("received subscribed data of \(data)")")
@@ -49,7 +49,7 @@ class MatchmakingRepo {
                         }
                     }
                 case .matched:
-                    if let duelId = results.duel {
+                    if let duelId = results.data?.duel {
                         cancelMatchmaking(uid: uid)
                         logger.debug("\("Matched game from call \(duelId)")")
                         callback(duelId)

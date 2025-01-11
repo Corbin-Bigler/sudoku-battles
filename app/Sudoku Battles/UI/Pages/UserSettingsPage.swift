@@ -162,7 +162,9 @@ struct UserSettingsPage: View {
                     }
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        preferencesState.setDarkMode(!darkMode)
+                        withAnimation {
+                            preferencesState.setDarkMode(!darkMode)
+                        }
                     }
                 }
                 .padding(16)

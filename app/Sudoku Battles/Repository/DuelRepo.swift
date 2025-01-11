@@ -25,10 +25,7 @@ class DuelRepo: ObservableObject {
     @Published private(set) var enemyBoard: SudokuBoardModel?
     @Published private(set) var enemyData: UserData?
     
-    @Published private(set) var botData: Bot?
-    
-    var enemyName: String { enemyData?.username ?? botData!.username }
-    var enemyRanking: Int { enemyData?.ranking ?? botData!.ranking }
+    var enemyName: String { enemyData?.username ?? "Bot" }
     var enemyPercentage: Double { enemyBoard?.percentageComplete ?? 0 }
         
     @Published private(set) var secondsSinceStart: Int
@@ -45,37 +42,37 @@ class DuelRepo: ObservableObject {
         self.difficulty = .extreme
         self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
     }
-    init(friendlyId: String, duelId: String, firstIsFirendly: Bool, friendlyBoard: SudokuBoardModel, botData: Bot?, startTime: Timestamp, won: Bool?) {
-        self.friendlyId = friendlyId
-        self.duelId = duelId
-        self.firstIsFirendly = firstIsFirendly
-        self.friendlyBoard = friendlyBoard
-        self.botData = botData
-        self.startTime = startTime
-        self.won = won
-        self.difficulty = .extreme
-        self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
-    }
     init(friendlyId: String, duelId: String) async throws {
         self.friendlyId = friendlyId
         self.duelId = duelId
-        guard let duel = try await FirestoreDs.shared.getDuel(id: duelId) else { throw AppError.invalidResponse }
+        guard let duel = try await FirestoreDs.shared.getDuel(id: duelId) else { throw SudokuError.invalidResponse }
         
-        if friendlyId == duel.firstPlayer.documentID { firstIsFirendly = true }
-        else if (friendlyId == duel.secondPlayer.documentID) { firstIsFirendly = false }
-        else { throw AppError.invalidResponse }
-        
-        let enemyUid = firstIsFirendly ? duel.secondPlayer.documentID : duel.firstPlayer.documentID
-        guard let enemyData = try await FirestoreDs.shared.getUserData(uid: enemyUid) else { throw AppError.invalidResponse }
-        self.enemyData = enemyData
-        
-        let enemyBoardString = firstIsFirendly ? duel.secondPlayerBoard : duel.firstPlayerBoard
-        guard let enemyBoard = SudokuBoardModel(given: duel.given, board: enemyBoardString) else { throw AppError.invalidResponse}
-        self.enemyBoard = enemyBoard
-        
-        let friendlyBoardString = firstIsFirendly ? duel.firstPlayerBoard : duel.secondPlayerBoard
-        guard let friendlyBoard = SudokuBoardModel(given: duel.given, board: friendlyBoardString) else { throw AppError.invalidResponse}
-        self.friendlyBoard = friendlyBoard
+        if duel.enemyIsBot {
+            if friendlyId == duel.firstPlayer.documentID { firstIsFirendly = true }
+            else if (friendlyId == duel.secondPlayer!.documentID) { firstIsFirendly = false }
+            else { throw SudokuError.invalidResponse }
+            
+            guard let enemyBoard = SudokuBoardModel(given: duel.given, board: duel.firstPlayerBoard) else { throw SudokuError.invalidResponse}
+            self.enemyBoard = enemyBoard
+            guard let friendlyBoard = SudokuBoardModel(given: duel.given, board: duel.firstPlayerBoard) else { throw SudokuError.invalidResponse}
+            self.friendlyBoard = friendlyBoard
+        } else {
+            if friendlyId == duel.firstPlayer.documentID { firstIsFirendly = true }
+            else if (friendlyId == duel.secondPlayer!.documentID) { firstIsFirendly = false }
+            else { throw SudokuError.invalidResponse }
+            
+            let enemyUid = firstIsFirendly ? duel.secondPlayer!.documentID : duel.firstPlayer.documentID
+            guard let enemyData = try await FirestoreDs.shared.getUserData(uid: enemyUid) else { throw SudokuError.invalidResponse }
+            self.enemyData = enemyData
+            
+            let enemyBoardString = firstIsFirendly ? duel.secondPlayerBoard : duel.firstPlayerBoard
+            guard let enemyBoard = SudokuBoardModel(given: duel.given, board: enemyBoardString!) else { throw SudokuError.invalidResponse}
+            self.enemyBoard = enemyBoard
+            
+            let friendlyBoardString = firstIsFirendly ? duel.firstPlayerBoard : duel.secondPlayerBoard
+            guard let friendlyBoard = SudokuBoardModel(given: duel.given, board: friendlyBoardString!) else { throw SudokuError.invalidResponse}
+            self.friendlyBoard = friendlyBoard
+        }
         
         self.difficulty = duel.difficulty
         self.startTime = duel.startTime
@@ -102,7 +99,6 @@ class DuelRepo: ObservableObject {
     
     var gameListener: ListenerRegistration?
     func subscribe() async throws {
-        
         Main {
             self.secondsSinceStart = Int(Date().timeIntervalSince1970) - Int(self.startTime.seconds)
             self.timer?.invalidate()
@@ -117,8 +113,10 @@ class DuelRepo: ObservableObject {
             logger.trace("\("received subscribed data of \(game)")")
             
             let enemyBoardString = firstIsFirendly ? game.secondPlayerBoard : game.firstPlayerBoard
-            if let enemyBoard = SudokuBoardModel(given: game.given, board: enemyBoardString) {
-                Main { self.enemyBoard = enemyBoard }
+            if let enemyBoardString {
+                if let enemyBoard = SudokuBoardModel(given: game.given, board: enemyBoardString) {
+                    Main { self.enemyBoard = enemyBoard }
+                }
             }
             
             if let winner = game.winner {
@@ -127,8 +125,8 @@ class DuelRepo: ObservableObject {
             }
         }
     }
+    
     func unsubscribe() {
-        print("unsubscribe")
         gameListener?.remove()
         gameListener = nil
         timer?.invalidate()

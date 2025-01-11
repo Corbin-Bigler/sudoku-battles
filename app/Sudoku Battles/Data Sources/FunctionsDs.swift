@@ -21,7 +21,7 @@ class FunctionsDs {
                     continuation.resume(throwing: error)
                 } else {
                     guard let data = (result?.data as? String)?.data(using: .utf8) else {
-                        continuation.resume(throwing: AppError.networkError)
+                        continuation.resume(throwing: SudokuError.networkError)
                         return
                     }
                     do {
@@ -29,7 +29,7 @@ class FunctionsDs {
                         continuation.resume(returning: response)
                     } catch {
                         logger.error("\(error)")
-                        continuation.resume(throwing: AppError.invalidResponse)
+                        continuation.resume(throwing: SudokuError.invalidResponse)
                     }
                 }
             }
@@ -40,7 +40,7 @@ class FunctionsDs {
         try await callFunction("invite", params: ["invitee": uid])
     }
 
-    func setUsername(username: String) async throws -> SetUsernameResponse {
+    func setUsername(username: String) async throws -> FunctionsResponse<SetUsernameStatus, Never> {
         try await callFunction("setUsername", params: ["username": username])
     }
     
@@ -48,7 +48,7 @@ class FunctionsDs {
         try await callFunction("verifyDuelBoard", params: ["duelId": duelId])
     }
 
-    func requestMatchmaking() async throws -> MatchmakingResponse {
+    func requestMatchmaking() async throws -> FunctionsResponse<MatchmakingStatus, MatchmakingData> {
         try await callFunction("matchmaking")
     }
 
