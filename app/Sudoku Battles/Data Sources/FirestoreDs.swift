@@ -59,7 +59,7 @@ class FirestoreDs {
             try await users.document(uid).updateData(["profilePicture" : path])
         } catch {
             logger.error("\(error)")
-            throw AppError.firebaseConnectionError
+            throw AppError.networkError
         }
     }
     func getUserData(uid: String) async throws -> UserData? {
@@ -69,7 +69,7 @@ class FirestoreDs {
             if !document.exists { return nil }
         } catch {
             logger.error("\(error)")
-            throw AppError.firebaseConnectionError
+            throw AppError.networkError
         }
         
         do {
@@ -89,7 +89,7 @@ class FirestoreDs {
                 .getDocuments()
         } catch {
             logger.error("\(error)")
-            throw AppError.firebaseConnectionError
+            throw AppError.networkError
         }
 
         var results: [String: UserData] = [:]
@@ -107,7 +107,7 @@ class FirestoreDs {
             try await duels.document(duelId).updateData([field : board])
         } catch {
             logger.error("\(error)")
-            throw AppError.firebaseConnectionError
+            throw AppError.networkError
         }
     }
     func getDuel(id: String) async throws -> Duel? {
@@ -117,7 +117,7 @@ class FirestoreDs {
             if !document.exists { return nil }
         } catch {
             logger.error("\(error)")
-            throw AppError.firebaseConnectionError
+            throw AppError.networkError
         }
         
         do {

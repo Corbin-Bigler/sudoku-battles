@@ -6,27 +6,20 @@ struct LandingPage: View {
     @EnvironmentObject private var authState: AuthenticationState
     @State private var showEnterUsername = false
     @State private var settingUsername = false
+    @State private var authenticating = false
     @FocusState private var usernameFieldFocused
     @State private var username = ""
-    @State private var error: String?
+    @State private var error: AppError?
     
     func submitUsername(user: AppUser) {
         settingUsername = true
         Task {
             do {
-                let response = try await FunctionsDs.shared.setUsername(username: username)
-                switch response.status {
-                case .success:
-                    await authState.logIn(user: user)
-                    navState.clear()
-                case .serverError: Main { error = "Server Error" }
-                case .unauthorized: Main { error = "Unauthorized" }
-                case .usernameTaken: Main { error = "Username taken" }
-                case .invalidRequest: Main { error = "Invalid Request" }
-                }
+                _ = try await FunctionsDs.shared.setUsername(username: username)
             } catch {
                 logger.error("\(error)")
-                self.error = error.localizedDescription
+                if let error = error as? AppError { self.error = error }
+                else { self.error = .unknown }
             }
             Main { settingUsername = false }
         }
@@ -91,9 +84,15 @@ struct LandingPage: View {
                                 color: .white,
                                 outlined: false
                             ) {
+                                if !NetworkUtility.shared.isConnected {
+                                    error = .networkError
+                                    return
+                                }
+
                                 Task {
                                     if let credential = await GoogleAuthDs.shared.requestCredential() {
                                         do {
+                                            await Main.async { self.authenticating = true }
                                             try await authState.logIn(credential: credential)
                                             if authState.user != nil && authState.userData == nil {
                                                 Main {
@@ -101,10 +100,13 @@ struct LandingPage: View {
                                                     showEnterUsername = true
                                                 }
                                             }
-                                        } catch AppError.firebaseConnectionError {
-                                            self.error = "Unable to connect to server"
+                                        } catch {
+                                            logger.error("\(error)")
+                                            if let error = error as? AppError { self.error = error }
+                                            else { self.error = .unknown }
                                         }
                                     }
+                                    Main { self.authenticating = false }
                                 }
                             }
                             RoundedButton(
@@ -113,8 +115,13 @@ struct LandingPage: View {
                                 color: .white,
                                 outlined: false
                             ) {
+                                if !NetworkUtility.shared.isConnected {
+                                    error = .networkError
+                                    return
+                                }
                                 Task {
                                     if let credential = try? await AppleAuthDs.shared.requestCredential() {
+                                        await Main.async { self.authenticating = true }
                                         do {
                                             try await authState.logIn(credential: credential)
                                             if authState.user != nil && authState.userData == nil {
@@ -123,10 +130,14 @@ struct LandingPage: View {
                                                     showEnterUsername = true
                                                 }
                                             }
-                                        } catch AppError.firebaseConnectionError {
-                                            self.error = "Unable to connect to server"
+                                        } catch {
+                                            logger.error("\(error)")
+                                            if let error = error as? AppError { self.error = error }
+                                            else { self.error = .unknown }
                                         }
                                     }
+                                    
+                                    Main { self.authenticating = false }
                                 }
                             }
                         }
@@ -138,15 +149,21 @@ struct LandingPage: View {
         }
         .foregroundStyle(.white)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .alert("Network Error", isPresented: Binding(get: {error == .networkError}, set: {_ in error = nil})) {
+            Button("Ok", role: .cancel) {}
+        } message: {
+            Text("Unable to connect to server.")
+        }
         .background {
             GeometryReader { geometry in
-                Color.blue400
+                let color: Color = colorScheme == .dark ? .gray900 : .blue400
+                
+                color
                 Image("SquareNoise")
                     .resizable()
                     .scaledToFill()
                     .frame(width: geometry.size.width, height: geometry.size.height)
                 
-                let color: Color = colorScheme == .dark ? .blue500 : .blue400
                 LinearGradient(
                     gradient: Gradient(stops: [
                         Gradient.Stop(color: color.opacity(0), location: 0.0),
@@ -156,14 +173,19 @@ struct LandingPage: View {
                     endPoint: .bottom
                 )
                 Image("BlurredHighlight")
-                    .offset(x: -350, y: -475)
+                    .renderingMode(.template)
+                    .offset(x: -400, y: -475)
                 Image("BlurredHighlight")
-                    .offset(x: geometry.size.width - 400, y: geometry.size.width - 375)
-
+                    .renderingMode(.template)
+                    .offset(x: geometry.size.width - 350, y: geometry.size.height - 750)
             }
+            .foregroundStyle(colorScheme == .dark ? .blue200 : .white)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: Alignment.topLeading)
             .ignoresSafeArea()
             .navigationBarBackButtonHidden()
+        }
+        .overlay(isPresented: authenticating) {
+            ProgressView()
         }
     }
 }

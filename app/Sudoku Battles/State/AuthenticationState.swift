@@ -14,7 +14,7 @@ class AuthenticationState: ObservableObject {
     @Published var validating = true
     @Published var gettingUserData = false
     @Published var unableToContactFirebase = false
-
+    
     func initialize() {
         self.auth = Auth.auth()
         if Bundle.main.dev { auth.useEmulator(withHost: "\(DevEnvironment.emulatorHost)", port: 9099) }
@@ -48,12 +48,16 @@ class AuthenticationState: ObservableObject {
     
     func logIn(credential: AuthCredential) async throws {
         do {
-            let authData = try await auth.signIn(with: credential)
-            await logIn(user: AppUser(authData.user))
+            
+            try await TimeoutTask(seconds: 5) {
+                let authData = try await self.auth.signIn(with: credential)
+                await self.logIn(user: AppUser(authData.user))
+            }
         } catch {
-            throw AppError.firebaseConnectionError
+            throw AppError.networkError
         }
     }
+
     func logIn(user: AppUser) async {
         await Main.async { self.user = user }
         await updateUserData()

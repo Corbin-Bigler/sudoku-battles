@@ -21,7 +21,7 @@ class FunctionsDs {
                     continuation.resume(throwing: error)
                 } else {
                     guard let data = (result?.data as? String)?.data(using: .utf8) else {
-                        continuation.resume(throwing: AppError.firebaseConnectionError)
+                        continuation.resume(throwing: AppError.networkError)
                         return
                     }
                     do {

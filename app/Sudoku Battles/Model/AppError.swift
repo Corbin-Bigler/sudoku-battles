@@ -1,9 +1,11 @@
 import Foundation
 
-enum AppError: Swift.Error {
+enum AppError: Error {
     case networkError
-    case firebaseConnectionError
+    case appOutdated
     case invalidResponse
     case unauthorized
-    case imageTooSmall
+    case serverUpdating
+    case serverError
+    case unknown
 }
