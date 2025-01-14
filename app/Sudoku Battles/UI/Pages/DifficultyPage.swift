@@ -61,7 +61,7 @@ struct DifficultyPage: View {
                             let puzzle = puzzles.randomElement()!
                             
                             print(puzzle)
-                            let model = SudokuBoardModel(given: puzzle.puzzle, board: puzzle.puzzle)!
+                            let model = SudokuBoard(given: puzzle.puzzle, board: puzzle.puzzle)!
                             navState.navigate {
                                 SoloPage(difficulty: difficulty, game: SoloGame(model: model, solution: puzzle.solution, seconds: 0))
                             }

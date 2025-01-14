@@ -1,5 +1,5 @@
 //
-//  Task.swift
+//  TimeoutTask.swift
 //  Sudoku Battles
 //
 //  Created by Corbin Bigler on 1/9/25.
@@ -7,6 +7,16 @@
 import Foundation
 
 struct TimedOutError: Error, Equatable {}
+
+private actor Resumer {
+    private var resumed = false
+    
+    func checkAndResume() -> Bool {
+        if resumed { return false }
+        resumed = true
+        return true
+    }
+}
 
 func TimeoutTask<T>(seconds: Double, operation: @escaping () async throws -> T) async throws -> T {
     return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<T, Error>) in
@@ -36,15 +46,5 @@ func TimeoutTask<T>(seconds: Double, operation: @escaping () async throws -> T) 
                 continuation.resume(throwing: error)
             }
         }
-    }
-}
-
-actor Resumer {
-    private var resumed = false
-
-    func checkAndResume() -> Bool {
-        if resumed { return false }
-        resumed = true
-        return true
     }
 }

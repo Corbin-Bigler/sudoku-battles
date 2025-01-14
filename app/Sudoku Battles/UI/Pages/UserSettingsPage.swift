@@ -307,7 +307,7 @@ struct UserSettingsPage: View {
                     RoundedButton(label: "Cancel", color: colorScheme == .dark ? .white : .black, outlined: true) {
                         showDeleteAccountConfirm = false
                     }
-                    RoundedButton(label: "Delete", color: .red400, loading: usernameChanging) {
+                    RoundedButton(label: "Delete", color: .red400, loading: deleting) {
                         deleteAccount()
                     }
                 }

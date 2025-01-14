@@ -9,7 +9,6 @@ struct DuelPage: View {
 
     @State private var showExit = false
     @State private var error = false
-    @State private var timer: Timer?
     
     let user: AppUser
     let userData: UserData
@@ -32,8 +31,11 @@ struct DuelPage: View {
         return text
     }
     
+    var secondsSinceStart: Int {
+        Int(Date().timeIntervalSince1970) - Int(duelRepo.startTime.seconds)
+    }
     var timerText: String {
-        let totalSeconds = duelRepo.endTime.flatMap { $0.seconds - duelRepo.startTime.seconds } ?? Int64(duelRepo.secondsSinceStart)
+        let totalSeconds = duelRepo.endTime.flatMap { $0.seconds - duelRepo.startTime.seconds } ?? Int64(secondsSinceStart)
         let hours = totalSeconds / 3600
         let minutes = (totalSeconds % 3600) / 60
         let seconds = totalSeconds % 60
@@ -46,100 +48,100 @@ struct DuelPage: View {
     var foregroundColor: Color { colorScheme == .dark ? .white : .black }
     
     var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                ZStack {
-                    Image("ChevronIcon")
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 12)
-                        .foregroundStyle(foregroundColor)
-                }
-                .frame(width: 40, height: 40)
-                .circleButton(outline: foregroundColor) {
-                    showExit = true
-                }
-                Spacer()
-                
-                HStack(spacing: 6) {
-                    Image("AlarmIcon")
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 18, height: 18)
-                    Text(timerText)
-                        .font(.sora(16, .semibold))
-                }
-                .frame(height: 36)
-                .padding(.horizontal, 16)
-                .foregroundStyle(.red400)
-                .background(colorScheme == .dark ? .red800 : .red50)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .onTapGesture(count: 2) {
-                    if(Bundle.main.dev) {
-                        Task {
-                            guard let solution = try? await FirestoreDs.shared.getSolution(duelId: duelRepo.duelId),
-                                  let board = SudokuBoardModel(given: duelRepo.friendlyBoard.givenString, board: solution)
-                            else { return }
-                            duelRepo.updateFriendlyBoard(board: board)
-                        }
-                    }
-                }
-                
-                Spacer()
-                Spacer()
-                    .frame(width: 40, height: 40)
-            }
-            .padding(.horizontal, 16)
+        TimelineView(.periodic(from: .now, by: 1)) { context in
             VStack(spacing: 20) {
-                HStack(spacing: 11) {
-                    VStack {
-                        HStack {
-                            Text(userData.username)
-                                .font(.sora(13, .semibold))
-                                .lineLimit(1)
-                            Text(String(userData.ranking))
-                                .font(.sora(14, .semibold))
-                                .frame(width: 44, height: 22)
-                                .background(.blue400)
-                                .foregroundStyle(.white)
-                                .clipShape(RoundedRectangle(cornerRadius: 11))
-                        }
-                        LinearProgress(progress: duelRepo.friendlyBoard.percentageComplete, color: .green400)
-                            .frame(height: 10)
+                HStack {
+                    ZStack {
+                        Image("ChevronIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 12)
+                            .foregroundStyle(foregroundColor)
                     }
-                    .padding(10)
-                    .background(.green400.opacity(0.15))
-                    .clipShape(UnevenRoundedRectangle(bottomTrailingRadius: 14, topTrailingRadius: 14))
-                    Text("vs")
-                        .font(.sora(13, .semibold))
-                    VStack {
-                        HStack {
-                            Text(duelRepo.enemyName)
-                                .font(.sora(13, .semibold))
-                                .lineLimit(1)
-                            if let enemyRanking = duelRepo.enemyRanking{
-                                Text(String(enemyRanking))
+                    .frame(width: 40, height: 40)
+                    .circleButton(outline: foregroundColor) {
+                        showExit = true
+                    }
+                    Spacer()
+                    
+                    HStack(spacing: 6) {
+                        Image("AlarmIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 18, height: 18)
+                        Text(timerText)
+                            .font(.sora(16, .semibold))
+                    }
+                    .frame(height: 36)
+                    .padding(.horizontal, 16)
+                    .foregroundStyle(.red400)
+                    .background(colorScheme == .dark ? .red800 : .red50)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .onTapGesture(count: 2) {
+                        if(ProcessInfo.dev) {
+                            Task {
+                                guard let solution = try? await duelRepo.strategy.getSolution(),
+                                      let board = SudokuBoard(given: duelRepo.friendlyBoard.givenString, board: solution)
+                                else { return }
+                                duelRepo.updateBoard(board)
+                            }
+                        }
+                    }
+                    
+                    Spacer()
+                    Spacer()
+                        .frame(width: 40, height: 40)
+                }
+                .padding(.horizontal, 16)
+                VStack(spacing: 20) {
+                    HStack(spacing: 11) {
+                        VStack {
+                            HStack {
+                                Text(userData.username)
+                                    .font(.sora(13, .semibold))
+                                    .lineLimit(1)
+                                Text(String(userData.ranking))
                                     .font(.sora(14, .semibold))
                                     .frame(width: 44, height: 22)
                                     .background(.blue400)
                                     .foregroundStyle(.white)
                                     .clipShape(RoundedRectangle(cornerRadius: 11))
                             }
+                            LinearProgress(progress: duelRepo.friendlyBoard.percentageComplete, color: .green400)
+                                .frame(height: 10)
                         }
-                        LinearProgress(progress: duelRepo.enemyPercentage, color: .yellow400)
-                            .frame(height: 10)
+                        .padding(10)
+                        .background(.green400.opacity(0.15))
+                        .clipShape(UnevenRoundedRectangle(bottomTrailingRadius: 14, topTrailingRadius: 14))
+                        Text("vs")
+                            .font(.sora(13, .semibold))
+                        VStack {
+                            HStack {
+                                Text(duelRepo.enemyName)
+                                    .font(.sora(13, .semibold))
+                                    .lineLimit(1)
+                                Text(String(duelRepo.enemyRanking))
+                                    .font(.sora(14, .semibold))
+                                    .frame(width: 44, height: 22)
+                                    .background(.blue400)
+                                    .foregroundStyle(.white)
+                                    .clipShape(RoundedRectangle(cornerRadius: 11))
+                            }
+                            LinearProgress(progress: duelRepo.strategy.enemyPercentage, color: .yellow400)
+                                .frame(height: 10)
+                        }
+                        .padding(10)
+                        .background(.yellow400.opacity(0.15))
+                        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 14))
                     }
-                    .padding(10)
-                    .background(.yellow400.opacity(0.15))
-                    .clipShape(UnevenRoundedRectangle(topLeadingRadius: 14, bottomLeadingRadius: 14))
+
+                    let binding = Binding(get: {duelRepo.friendlyBoard}, set: { duelRepo.updateBoard($0) })
+                    SudokuGame(board: binding)
                 }
 
-                let binding = Binding(get: {duelRepo.friendlyBoard}, set: {duelRepo.updateFriendlyBoard(board: $0)})
-                SudokuBoard(model: binding)
             }
-
         }
         .overlay(isPresented: showExit) {
             VStack(spacing: 12) {
@@ -150,11 +152,15 @@ struct DuelPage: View {
                     Text("Duel in Progress")
                         .font(.sora(20, .semibold))
                     Spacer()
-                    Image("CloseIcon")
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 12)
+                    
+                    Button(action: { showExit = false }) {
+                        Image("CloseIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 12)
+                            .foregroundStyle(.white)
+                    }
                 }
                 
                 Text("Please be aware that the duel will not stop if you leave. Would you like to forfeit instead?")
@@ -266,33 +272,19 @@ struct DuelPage: View {
             }
             .padding(16)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(backgroundColor)
         .navigationBarBackButtonHidden()
         .onDisappear {
             duelRepo.unsubscribe()
         }
-        
     }
 }
 
-private struct DuelPagePreview: View {
-    var body: some View {
-        DuelPage(
-            duelRepo: DuelRepo(
-                friendlyId: "mockUid",
-                duelId: "mockGameId",
-                firstIsFirendly: true,
-                friendlyBoard: Mock.sudokuBoard,
-                enemyBoard: Mock.correctSudokuBoard,
-                enemyData: Mock.userData,
-                startTime: Timestamp.init(),
-                won: true
-            ),
-            user: Mock.appUser,
-            userData: Mock.userData
-        )
-    }
-}
 #Preview {
-    DuelPagePreview()
+    DuelPage(
+        duelRepo: Mock.duelRepo,
+        user: Mock.appUser,
+        userData: Mock.userData
+    )
 }

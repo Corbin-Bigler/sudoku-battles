@@ -3,10 +3,12 @@ import { DocumentSnapshot, Timestamp } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 import { MatchmakingStatus } from './model/MatchmakingStatus';
 import { Matchmaking } from './model/Matchmaking';
-import { Duel } from './model/Duel';
+import { BotDuel } from './model/BotDuel';
+// import { PlayerDuel } from './model/PlayerDuel';
 
 const db = admin.firestore();
-const duels = db.collection('duels')
+const botDuels = db.collection('bot-duels')
+const playerDuels = db.collection('player-duels')
 const users = db.collection('users')
 const sudoku = {
     easy: db.collection("sudoku-easy"),
@@ -17,7 +19,7 @@ const sudoku = {
 }
 
 const matchmakingTimeout = (8 * 1000)
-const botTimeout = 1 //(15 * 1000)
+const botTimeout = (9 * 1000)
 
 async function attemptGetRandomSudoku(): Promise<DocumentSnapshot | null> {
     for(let i = 0; i < 3; i++) {
@@ -55,11 +57,12 @@ export const matchmaking = onCall({
 
     try {
         const querySnapshot = await matchmaking
-        .where('game', '==', null)
+        .where('game', '==', null) 
         .where('timestamp', '>=', recentTimestamp)
         .get();
 
         const filteredDocs = querySnapshot.docs.filter(doc => doc.id !== uid)
+
         if(filteredDocs.length == 0) {
             const matchmakingRef = matchmaking.doc(uid)
 
@@ -77,24 +80,26 @@ export const matchmaking = onCall({
                         return JSON.stringify({ status: MatchmakingStatus.ServerError })    
                     }
 
-                    console.log(randomSudoku)
-                    console.log("YOU REALLY NEED A BOT")
-                    const gameData: Duel = {
-                        "firstPlayer": users.doc(uid),
-                        "secondPlayer": null,
-                        "firstPlayerBoard": randomSudoku,
-                        "secondPlayerBoard": null,
-                        "startTime": Timestamp.fromMillis(Timestamp.now().toMillis() + 3000),
-                        "given": randomSudoku,
-                        "sudoku": randomGame.ref,
-                        "botEndTime": Timestamp.fromMillis(Timestamp.now().toMillis() + (5 * 60000))
-                    };
-                    const newDuelRef = duels.doc();
-                    await newDuelRef.set(gameData)
+                    let userSnap = await users.doc(uid).get()
+                    let userData = userSnap.data()
+
+                    let startTime = Timestamp.fromMillis(Timestamp.now().toMillis() + 3000)
+                    const botDuelData: BotDuel = {
+                        startTime: startTime,
+                        player: users.doc(uid),
+                        playerBoard: randomSudoku,
+                        endTime: null,
+                        given: randomSudoku,
+                        botEndTime: Timestamp.fromMillis(startTime.toMillis() + 30000),
+                        botRanking: userData?.ranking ?? 100,
+                        sudoku: randomGame.ref,
+                    }
+                    const newBotDuelRef = botDuels.doc();
+                    await newBotDuelRef.set(botDuelData)
 
                     return JSON.stringify({
                         status: MatchmakingStatus.Matched,
-                        data: {duel: newDuelRef.id}
+                        data: {duelPath: newBotDuelRef.path}
                     })
                 } else {
                     await matchmakingRef.update({
@@ -102,7 +107,7 @@ export const matchmaking = onCall({
                     })
                     return JSON.stringify({
                         status: MatchmakingStatus.Unmatched,
-                        data: {matchmaking: matchmakingSnap.ref}
+                        data: {matchmakingPath: matchmakingSnap.ref.path}
                     })        
                 }
             } else {
@@ -114,7 +119,7 @@ export const matchmaking = onCall({
                 })
                 return JSON.stringify({
                     status: MatchmakingStatus.Unmatched,
-                    data: {matchmaking: matchmakingRef.id} 
+                    data: {matchmakingPath: matchmakingRef.path} 
                 })
             }
         } else {
@@ -136,14 +141,14 @@ export const matchmaking = onCall({
                 "difficulty": "easy",
                 "sudoku": randomGame.ref
             };
-            const newDuelRef = duels.doc();
-            await newDuelRef.set(gameData)
+            const newPlayerDuelRef = playerDuels.doc();
+            await newPlayerDuelRef.set(gameData)
 
-            otherMatchmakingRef.update({game: newDuelRef})
+            otherMatchmakingRef.update({game: newPlayerDuelRef})
 
             return JSON.stringify({
                 status: MatchmakingStatus.Matched,
-                data: {duel: newDuelRef.id}
+                data: {duelPath: newPlayerDuelRef.path}
             })
         }
     } catch (error) {

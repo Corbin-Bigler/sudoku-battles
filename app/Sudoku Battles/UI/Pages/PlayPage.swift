@@ -3,7 +3,6 @@ import SwiftUI
 struct PlayPage: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject private var navState: NavigationState
-    @ObservedObject var gamesState = GamesState.shared
 
     let user: AppUser
     let userData: UserData
@@ -14,21 +13,16 @@ struct PlayPage: View {
     var body: some View {
         VStack(spacing: 40) {
             HStack(spacing: 0) {
-                if gamesState.games.isEmpty {
-                    Spacer()
-                        .frame(width: 40, height: 40)
-                } else {
-                    ZStack {
-                        Image("ChevronIcon")
-                            .renderingMode(.template)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 12)
-                    }
-                    .frame(width: 40, height: 40)
-                    .circleButton(outline: foregroundColor) {
-                        navState.navigate(back: 1)
-                    }
+                ZStack {
+                    Image("ChevronIcon")
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 12)
+                }
+                .frame(width: 40, height: 40)
+                .circleButton(outline: foregroundColor) {
+                    navState.navigate(back: 1)
                 }
                 Spacer()
                 ZStack {

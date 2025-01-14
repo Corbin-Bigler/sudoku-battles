@@ -48,10 +48,23 @@ struct MatchmakingPage: View {
             }
         }
         .onAppear {
-            MatchmakingRepo.shared.startMatchmaking(uid: user.uid) { duelId in
+            MatchmakingRepo.shared.startMatchmaking(uid: user.uid) { duelReference in
                 Task {
-                    let duelRepo = try? await DuelRepo(friendlyId: user.uid, duelId: duelId)
-                    Main { self.duelRepo = duelRepo }
+                    if duelReference.parent.collectionID == FirestoreDs.botDuelsCollectionId {
+                        do {
+                            let duelStrategy = try await BotDuelStrategy(duelReference)
+                            Main { self.duelRepo = DuelRepo(strategy: duelStrategy) }
+                        } catch {
+                            logger.error("\(error)")
+                        }
+                    } else if duelReference.parent.collectionID == FirestoreDs.playerDuelsCollectionId {
+                        do {
+                            let duelStrategy = try await PlayerDuelStrategy(duelReference, friendlyUid: user.uid)
+                            Main { self.duelRepo = DuelRepo(strategy: duelStrategy) }
+                        } catch {
+                            logger.error("\(error)")
+                        }
+                    }
                 }
             }
         }
@@ -77,42 +90,48 @@ private struct DuelView: View {
     var user: AppUser
     var userData: UserData
 
+    var secondsSinceStart: Int {
+        Int(Date().timeIntervalSince1970) - Int(duelRepo.startTime.seconds)
+    }
+
     var body: some View {
-        if subscribing {
-            Text("FOUND A DUEL")
-                .foregroundStyle(.white)
-                .font(.sora(14, .semibold))
-                .kerning(1.4)
-                .onAppear {
-                    Task {
-                        try? await duelRepo.subscribe()
-                        Main {subscribing = false}
-                    }
-                }
-        } else if duelRepo.secondsSinceStart >= 0 {
-            DuelPage(duelRepo: duelRepo, user: user, userData: userData)
-                .frame(maxHeight: .infinity)
-                .background(.white)
-        } else {
-            VStack {
-                Text("STARTING IN")
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            if subscribing {
+                Text("FOUND A DUEL")
+                    .foregroundStyle(.white)
                     .font(.sora(14, .semibold))
                     .kerning(1.4)
-                let startingIn = abs(duelRepo.secondsSinceStart)
-                Spacer()
-                    .frame(height: 20)
-                ZStack {
-                    let transition = AnyTransition.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading))
-
-                    Text("\(startingIn)")
-                        .frame(maxWidth: .infinity)
-                        .font(.sora(96, .semibold))
-                        .id(startingIn)
-                        .transition(transition)
-                        .animation(.easeInOut(duration: 0.5), value: startingIn)
+                    .onAppear {
+                        Task {
+                            try? await duelRepo.subscribe()
+                            Main {subscribing = false}
+                        }
+                    }
+            } else if secondsSinceStart >= 0 {
+                DuelPage(duelRepo: duelRepo, user: user, userData: userData)
+                    .frame(maxHeight: .infinity)
+                    .background(.white)
+            } else {
+                VStack {
+                    Text("STARTING IN")
+                        .font(.sora(14, .semibold))
+                        .kerning(1.4)
+                    let startingIn = abs(secondsSinceStart)
+                    Spacer()
+                        .frame(height: 20)
+                    ZStack {
+                        let transition = AnyTransition.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading))
+                        
+                        Text("\(startingIn)")
+                            .frame(maxWidth: .infinity)
+                            .font(.sora(96, .semibold))
+                            .id(startingIn)
+                            .transition(transition)
+                            .animation(.easeInOut(duration: 0.5), value: startingIn)
+                    }
                 }
+                .foregroundStyle(.white)
             }
-            .foregroundStyle(.white)
         }
     }
 }

@@ -19,7 +19,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         AuthenticationState.shared.initialize()
         
         return true
-        
     }
     
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {

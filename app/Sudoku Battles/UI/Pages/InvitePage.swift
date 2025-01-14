@@ -11,7 +11,7 @@ struct InvitePage: View {
         
         guard username.count >= 3 else { return }
         debounceWorkItem = DispatchWorkItem { Task {
-            results = (try? await FirestoreDs.shared.getUserDatas(usernamePartial: username)) ?? [:]
+            results = (try? await FirestoreDs.shared.queryUserDatas(usernamePartial: username)) ?? [:]
         } }
         
         if let workItem = debounceWorkItem {
@@ -38,14 +38,15 @@ struct InvitePage: View {
                 ForEach(Array(results), id: \.key) { key, value in
                     HStack {
                         Button(action:{
-                            Task {
-                                do {
-                                    let response = try await FunctionsDs.shared.sendInvite(uid: key)
-                                    self.status = "\(response.status)"
-                                } catch {
-                                    self.status = "ERROR"
-                                }
-                            }
+                            fatalError("unimplemented")
+//                            Task {
+//                                do {
+//                                    let response = try await FunctionsDs.shared.sendInvite(uid: key)
+//                                    self.status = "\(response.status)"
+//                                } catch {
+//                                    self.status = "ERROR"
+//                                }
+//                            }
                         }) {
                             Text("Invite")
                         }

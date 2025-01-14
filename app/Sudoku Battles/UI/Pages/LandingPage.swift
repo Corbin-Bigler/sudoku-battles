@@ -11,7 +11,7 @@ struct LandingPage: View {
     @State private var username = ""
     
     @State private var status: SetUsernameStatus?
-    @State private var error: SudokuError?
+    @State private var error: AppError?
     
     func submitUsername(user: AppUser) {
         settingUsername = true
@@ -23,7 +23,7 @@ struct LandingPage: View {
                 if response.status != .success { status = response.status }
             } catch {
                 logger.error("\(error)")
-                if let error = error as? SudokuError { self.error = error }
+                if let error = error as? AppError { self.error = error }
                 else { self.error = .unknown }
             }
             Main { settingUsername = false }
@@ -107,7 +107,7 @@ struct LandingPage: View {
                                             }
                                         } catch {
                                             logger.error("\(error)")
-                                            if let error = error as? SudokuError { self.error = error }
+                                            if let error = error as? AppError { self.error = error }
                                             else { self.error = .unknown }
                                         }
                                     }
@@ -137,7 +137,7 @@ struct LandingPage: View {
                                             }
                                         } catch {
                                             logger.error("\(error)")
-                                            if let error = error as? SudokuError { self.error = error }
+                                            if let error = error as? AppError { self.error = error }
                                             else { self.error = .unknown }
                                         }
                                     }

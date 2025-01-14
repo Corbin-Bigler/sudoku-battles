@@ -4,7 +4,7 @@ struct SoloPage: View {
     @EnvironmentObject var navState: NavigationState
     @Environment(\.colorScheme) var colorScheme
 
-    @State private var model: SudokuBoardModel
+    @State private var model: SudokuBoard
     private let savedSeconds: Int
     private let solution: String
     private let difficulty: Difficulty
@@ -26,7 +26,7 @@ struct SoloPage: View {
         self.savedSeconds = game.seconds
     }
     
-    func updateModel(_ model: SudokuBoardModel) {
+    func updateModel(_ model: SudokuBoard) {
         self.changed = true
         self.model = model
         UserPreferencesDs.shared.save(game: SoloGame(
@@ -79,17 +79,16 @@ struct SoloPage: View {
             .background(colorScheme == .dark ? .red800 : .red50)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .onTapGesture(count: 2) {
-                if Bundle.main.dev {
-                    updateModel(SudokuBoardModel(given: model.givenString, board: solution)!)
+                if ProcessInfo.dev {
+                    updateModel(SudokuBoard(given: model.givenString, board: solution)!)
                 }
             }
             
             Spacer()
 
             let binding = Binding(get: {model}, set: {updateModel($0)})
-            SudokuBoard(model: binding)
+            SudokuGame(board: binding)
                 .padding(.horizontal, 3)
-
         }
         .background(backgroundColor)
         .overlay(isPresented: isSolved) {
