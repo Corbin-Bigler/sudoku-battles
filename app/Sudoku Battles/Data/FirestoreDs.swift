@@ -14,9 +14,9 @@ class FirestoreDs {
 
     init() {
         self.firestore = Firestore.firestore()
-        if ProcessInfo.dev {
+        if Bundle.main.dev {
             let settings = Firestore.firestore().settings
-            settings.host = "\(ProcessInfo.firebaseHost):\(ProcessInfo.firestorePort)"
+            settings.host = "\(Bundle.main.firebaseHost):\(Bundle.main.firestorePort)"
             settings.isSSLEnabled = false
             settings.cacheSettings = MemoryCacheSettings()
             Firestore.firestore().settings = settings

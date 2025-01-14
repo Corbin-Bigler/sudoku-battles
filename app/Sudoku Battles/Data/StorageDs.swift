@@ -9,8 +9,8 @@ class StorageDs {
 
     init() {
         storage = Storage.storage()
-        if ProcessInfo.dev {
-            storage.useEmulator(withHost: "\(ProcessInfo.firebaseHost)", port: 9199)
+        if Bundle.main.dev {
+            storage.useEmulator(withHost: "\(Bundle.main.firebaseHost)", port: 9199)
         }
         storageReference = storage.reference()
     }

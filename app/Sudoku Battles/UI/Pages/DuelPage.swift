@@ -46,6 +46,7 @@ struct DuelPage: View {
     var backgroundColor: Color { colorScheme == .dark ? .gray900 : .white }
     var outlineColor: Color { colorScheme == .dark ? .gray800 : .gray100 }
     var foregroundColor: Color { colorScheme == .dark ? .white : .black }
+    var enemyPercentage: Double { duelRepo.enemyPercentage ?? duelRepo.strategy.enemyPercentage }
     
     var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
@@ -80,7 +81,7 @@ struct DuelPage: View {
                     .background(colorScheme == .dark ? .red800 : .red50)
                     .clipShape(RoundedRectangle(cornerRadius: 20))
                     .onTapGesture(count: 2) {
-                        if(ProcessInfo.dev) {
+                        if(Bundle.main.dev) {
                             Task {
                                 guard let solution = try? await duelRepo.strategy.getSolution(),
                                       let board = SudokuBoard(given: duelRepo.friendlyBoard.givenString, board: solution)
@@ -129,7 +130,7 @@ struct DuelPage: View {
                                     .foregroundStyle(.white)
                                     .clipShape(RoundedRectangle(cornerRadius: 11))
                             }
-                            LinearProgress(progress: duelRepo.strategy.enemyPercentage, color: .yellow400)
+                            LinearProgress(progress: enemyPercentage, color: .yellow400)
                                 .frame(height: 10)
                         }
                         .padding(10)
@@ -238,7 +239,7 @@ struct DuelPage: View {
                         VStack(spacing: 5) {
                             Text(duelRepo.enemyName)
                                 .font(.sora(14, .semibold))
-                            LinearProgress(progress: duelRepo.enemyPercentage, color: .yellow400)
+                            LinearProgress(progress: enemyPercentage, color: .yellow400)
                                 .frame(height: 12)
                             Text(String(duelRepo.enemyRanking))
                                 .font(.sora(14, .semibold))

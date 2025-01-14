@@ -90,7 +90,7 @@ export const matchmaking = onCall({
                         playerBoard: randomSudoku,
                         endTime: null,
                         given: randomSudoku,
-                        botEndTime: Timestamp.fromMillis(startTime.toMillis() + 30000),
+                        botEndTime: Timestamp.fromMillis(startTime.toMillis() + 300000),
                         botRanking: userData?.ranking ?? 100,
                         sudoku: randomGame.ref,
                     }

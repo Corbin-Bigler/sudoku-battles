@@ -79,7 +79,7 @@ struct SoloPage: View {
             .background(colorScheme == .dark ? .red800 : .red50)
             .clipShape(RoundedRectangle(cornerRadius: 20))
             .onTapGesture(count: 2) {
-                if ProcessInfo.dev {
+                if Bundle.main.dev {
                     updateModel(SudokuBoard(given: model.givenString, board: solution)!)
                 }
             }

@@ -6,7 +6,7 @@ class DuelRepo: ObservableObject {
     @Published private(set) var won: Bool?
     @Published private(set) var endTime: Timestamp?
     @Published private(set) var friendlyBoard: SudokuBoard
-    @Published private(set) var enemyPercentage: Double
+    @Published private(set) var enemyPercentage: Double?
 
     var difficulty: Difficulty { strategy.difficulty }
     var startTime: Timestamp { strategy.startTime }
@@ -17,7 +17,6 @@ class DuelRepo: ObservableObject {
         self._endTime = Published(wrappedValue: strategy.endTime)
         self._friendlyBoard = Published(wrappedValue: strategy.friendlyBoard)
         self.strategy = strategy
-        self.enemyPercentage = strategy.enemyPercentage
     }
     
     func updateBoard(_ board: SudokuBoard) {

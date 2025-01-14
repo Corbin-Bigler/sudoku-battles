@@ -52,15 +52,18 @@ class BotDuelStrategy: DuelStrategy {
         let endDate = Date(timeIntervalSince1970: Double(botEndTime.seconds))
         Main {
             self.timer = Timer.scheduledTimer(withTimeInterval: endDate.timeIntervalSinceNow, repeats: false) { _ in
+                onEnemyPercentage(1)
                 onWinner((won: false, endTime: botEndTime))
             }
         }
         
         self.listener = try await FirestoreDs.shared.subscribeToDocument(reference) { (botDuel: BotDuel) in
             if let endTime = botDuel.endTime {
-                if endTime.nanoseconds < botDuel.botEndTime.nanoseconds {
+                if endTime.seconds < botDuel.botEndTime.seconds {
+                    onEnemyPercentage(self.enemyPercentage)
                     onWinner((won: true, endTime: endTime))
                 } else {
+                    onEnemyPercentage(self.enemyPercentage)
                     onWinner((won: false, endTime: endTime))
                 }
             }

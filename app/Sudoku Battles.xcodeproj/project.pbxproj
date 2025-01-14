@@ -296,6 +296,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Sudoku Battles/Sudoku Battles.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEV = NO;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = CN9BXLUCHZ;
 				ENABLE_PREVIEWS = YES;
@@ -331,6 +332,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Sudoku Battles/Sudoku Battles.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEV = NO;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = CN9BXLUCHZ;
 				ENABLE_PREVIEWS = YES;
@@ -428,6 +430,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Sudoku Battles/Sudoku Battles.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEV = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = CN9BXLUCHZ;
 				ENABLE_PREVIEWS = YES;
@@ -521,6 +524,7 @@
 				CODE_SIGN_ENTITLEMENTS = "Sudoku Battles/Sudoku Battles.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEV = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = CN9BXLUCHZ;
 				ENABLE_PREVIEWS = YES;

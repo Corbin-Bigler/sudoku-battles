@@ -17,7 +17,7 @@ class AuthenticationState: ObservableObject {
     
     func initialize() {
         self.auth = Auth.auth()
-        if ProcessInfo.dev { auth.useEmulator(withHost: "\(ProcessInfo.firebaseHost)", port: ProcessInfo.authenticationPort) }
+        if Bundle.main.dev { auth.useEmulator(withHost: "\(Bundle.main.firebaseHost)", port: Bundle.main.authenticationPort) }
         
         Main {
             self.validating = true
@@ -31,6 +31,7 @@ class AuthenticationState: ObservableObject {
                     let _ = try await user.getIDTokenResult(forcingRefresh: true)
                     await logIn(user: AppUser(user))
                 } catch let error as NSError {
+                    logger.error("\(error)")
                     if error.code == 17020 {
                         Main { self.unableToContactFirebase = true }
                     } else {

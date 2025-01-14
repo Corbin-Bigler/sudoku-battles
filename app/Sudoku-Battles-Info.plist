@@ -13,6 +13,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>Dev</key>
+	<string>${DEV}</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Sora-Bold.ttf</string>

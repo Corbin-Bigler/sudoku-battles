@@ -8,8 +8,8 @@ class FunctionsDs {
 
     init() {
         self.functions = Functions.functions()
-        if ProcessInfo.dev {
-            self.functions.useEmulator(withHost: "\(ProcessInfo.firebaseHost)", port: 5001)
+        if Bundle.main.dev {
+            self.functions.useEmulator(withHost: "\(Bundle.main.firebaseHost)", port: 5001)
         }
     }
 

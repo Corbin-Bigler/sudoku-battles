@@ -8,6 +8,9 @@ struct SudokuBattlesApp: App {
     @ObservedObject private var authState = AuthenticationState.shared
     @ObservedObject private var preferencesState = PreferencesState.shared
     
+    init() {
+        print(Bundle.main.dev)
+    }
     var body: some Scene {
         WindowGroup {
             let finalColorScheme: ColorScheme? = preferencesState.darkMode.flatMap { $0 ? .dark : .light }
