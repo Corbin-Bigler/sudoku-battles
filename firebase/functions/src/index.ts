@@ -5,4 +5,5 @@ export {verifyDuelBoard} from "./verifyDuelBoard"
 export {deleteAccount} from './deleteAccount'
 export {setUsername} from './setUsername'
 export {matchmaking} from './matchmaking'
-export {invite} from './invite'
+export {sendInvite} from './sendInvite'
+export {acceptInvite} from './acceptInvite'

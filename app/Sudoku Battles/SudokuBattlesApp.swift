@@ -9,7 +9,7 @@ struct SudokuBattlesApp: App {
     @ObservedObject private var preferencesState = PreferencesState.shared
     
     init() {
-        print(Bundle.main.dev)
+        
     }
     var body: some Scene {
         WindowGroup {

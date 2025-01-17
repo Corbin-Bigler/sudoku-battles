@@ -2,14 +2,14 @@ import SwiftUI
 
 struct NavigationContainer: View {
     @ObservedObject var authState = AuthenticationState.shared
-    @StateObject private var navRoute: NavigationState
-    init(navRoute: NavigationState = NavigationState()) {
-        self._navRoute = StateObject(wrappedValue: navRoute)
+    @StateObject private var navState: NavigationState
+    init(navRoute: NavigationState = NavigationState.shared) {
+        self._navState = StateObject(wrappedValue: navRoute)
     }
 
     var body: some View {
         VStack{
-            NavigationStack(path: $navRoute.path) {
+            NavigationStack(path: $navState.path) {
                 Group {
                     if let user = authState.user, let userData = authState.userData {
                         PlayPage(user: user, userData: userData)
@@ -23,7 +23,7 @@ struct NavigationContainer: View {
                     page.view
                 }
             }
-            .environmentObject(navRoute)
+            .environmentObject(navState)
         }
     }
 }

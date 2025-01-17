@@ -9,7 +9,24 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     let gcmMessageIDKey = "gcm.message_id"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        FirebaseApp.configure()
+        var plistData: [String: Any]
+        if Bundle.main.dev {
+            let path = Bundle.main.path(forResource: "GoogleService-Info-Development", ofType: "plist")!
+            plistData = NSDictionary(contentsOfFile: path) as! [String: Any]
+        } else {
+            let path = Bundle.main.path(forResource: "GoogleService-Info-Production", ofType: "plist")!
+            plistData = NSDictionary(contentsOfFile: path) as! [String: Any]
+        }
+        
+        let options = FirebaseOptions(googleAppID: plistData["GOOGLE_APP_ID"]! as! String, gcmSenderID: plistData["GCM_SENDER_ID"]! as! String)
+        options.clientID = plistData["CLIENT_ID"]! as? String
+        options.projectID = plistData["PROJECT_ID"]! as? String
+        options.apiKey = plistData["API_KEY"]! as? String
+        options.storageBucket = plistData["STORAGE_BUCKET"]! as? String
+        options.bundleID = plistData["BUNDLE_ID"]! as! String
+        options.googleAppID = plistData["GOOGLE_APP_ID"]! as! String
+        
+        FirebaseApp.configure(options: options)
 
         Messaging.messaging().delegate = self
         UNUserNotificationCenter.current().delegate = self
@@ -58,7 +75,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         let userInfo = notification.request.content.userInfo
 
         if let messageID = userInfo[gcmMessageIDKey] {
-          print("Message ID: \(messageID)")
+            logger.info("\("Message ID: \(messageID)")")
         }
         print(userInfo)
 
@@ -68,9 +85,32 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
         let userInfo = response.notification.request.content.userInfo
         if let messageID = userInfo[gcmMessageIDKey] {
-          print("Message ID: \(messageID)")
+            logger.info("\("Message ID: \(messageID)")")
         }
-        print(userInfo)
+        
+        if let invitePath = userInfo["invitePath"] as? String {
+            let response = try? await FunctionsDs.shared.acceptInvite(invitePath: invitePath)
+            guard let response,
+                  response.status == .success,
+                  let duelPath = response.data?.duelPath
+            else { return }
+
+            if AuthenticationState.shared.validating {
+                await AuthenticationState.shared.$validating.awaitFalse()
+            }
+            
+            if let user = AuthenticationState.shared.user,
+               let userData = AuthenticationState.shared.userData,
+               let duelStrategy = try? await PlayerDuelStrategy(FirestoreDs.shared.reference(of: duelPath), friendlyUid: user.uid) {
+                
+                print(duelStrategy)
+                NavigationState.shared.navigate {
+                    InvitePage(user: user, userData: userData, duelRepo: DuelRepo(strategy: duelStrategy))
+                }
+            } else {
+                logger.debug("NO USER DATA FOUND")
+            }
+        }
     }
 }
 
@@ -84,6 +124,7 @@ extension AppDelegate: MessagingDelegate {
             object: nil,
             userInfo: dataDict
         )
+        print("fcmToken: \(String(describing: fcmToken))")
         if let fcmToken {
             AuthenticationState.shared.setFcmToken(fcmToken)
             if let user = AuthenticationState.shared.user, let deviceId = UIDevice.current.identifierForVendor {
@@ -94,4 +135,14 @@ extension AppDelegate: MessagingDelegate {
         }
      }
     
+}
+
+private extension Published.Publisher where Output == Bool {
+    func awaitFalse() async {
+        for await value in self.values {
+            if !value {
+                return
+            }
+        }
+    }
 }

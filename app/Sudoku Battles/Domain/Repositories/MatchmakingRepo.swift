@@ -1,6 +1,6 @@
 import FirebaseAuth
 import FirebaseFirestore
-import FirebaseFunctions
+import FirebaseFunctions 
 
 class MatchmakingRepo {
     static let shared = MatchmakingRepo()
@@ -60,5 +60,4 @@ class MatchmakingRepo {
             }
         }
     }
-
 }

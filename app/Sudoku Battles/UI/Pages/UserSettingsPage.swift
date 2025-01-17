@@ -275,10 +275,12 @@ struct UserSettingsPage: View {
                     .font(.sora(16))
                     .multilineTextAlignment(.center)
                 
-                InputField(text: $newUsername, placeholder: "Type here...", color: .gray600, error: newUsernameError)
+                let inputFieldColor: Color = colorScheme == .dark ? .white : .gray600
+                InputField(text: $newUsername, placeholder: "Type here...", color: inputFieldColor, error: newUsernameError)
                 
                 HStack {
-                    RoundedButton(label: "Cancel", color: .black, outlined: true) {
+                    let cancelButtonColor: Color = colorScheme == .dark ? .white : .black
+                    RoundedButton(label: "Cancel", color: cancelButtonColor, outlined: true) {
                         showChangeUsername = false
                     }
                     RoundedButton(label: "Continue", color: .blue400, loading: usernameChanging) {

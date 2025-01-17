@@ -1,6 +1,8 @@
 import SwiftUI
 
 class NavigationState: ObservableObject {
+    static let shared = NavigationState()
+    
     @Published var path: [Page] = []
         
     @MainActor

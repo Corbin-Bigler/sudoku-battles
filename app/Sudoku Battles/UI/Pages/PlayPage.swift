@@ -4,6 +4,8 @@ struct PlayPage: View {
     @Environment(\.colorScheme) var colorScheme
     @EnvironmentObject private var navState: NavigationState
 
+    @ObservedObject private var gamesState = GamesState.shared
+    
     let user: AppUser
     let userData: UserData
     
@@ -13,17 +15,20 @@ struct PlayPage: View {
     var body: some View {
         VStack(spacing: 40) {
             HStack(spacing: 0) {
-                ZStack {
-                    Image("ChevronIcon")
-                        .renderingMode(.template)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 12)
+                if !gamesState.games.isEmpty {
+                    ZStack {
+                        Image("ChevronIcon")
+                            .renderingMode(.template)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 12)
+                    }
+                    .frame(width: 40, height: 40)
+                    .circleButton(outline: foregroundColor) {
+                        navState.navigate(back: 1)
+                    }
                 }
-                .frame(width: 40, height: 40)
-                .circleButton(outline: foregroundColor) {
-                    navState.navigate(back: 1)
-                }
+                
                 Spacer()
                 ZStack {
                     Image("GearIcon")
@@ -100,31 +105,36 @@ struct PlayPage: View {
                         )
                     }
 
-//                    Button(action: {
-//                        navState.navigate { InvitePage() }
-//                    }) {
-//                        HStack(spacing: 16) {
-//                            Image("FriendsIcon")
-//                                .resizable()
-//                                .scaledToFit()
-//                                .frame(width: 50, height: 50)
-//                            Text("Challenge Friends")
-//                                .font(.sora(22, .bold))
-//                        }
-//                        .padding(16)
-//                        .frame(maxWidth: .infinity, alignment: .leading)
-//                        .background(Color.yellow400)
-//                        .cornerRadius(15)
-//                        .overlay(
-//                            RoundedRectangle(cornerRadius: 15)
-//                                .stroke(.yellow500, lineWidth: 2)
-//                        )
-//                    }
+                    Button(action: {
+                        navState.navigate { InvitePage(user: user, userData: userData) }
+                    }) {
+                        HStack(spacing: 16) {
+                            Image("FriendsIcon")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                            Text("Challenge Friends")
+                                .font(.sora(22, .bold))
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.yellow400)
+                        .cornerRadius(15)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(.yellow500, lineWidth: 2)
+                        )
+                    }
                 }
                 .foregroundStyle(.white)
             }
             
             Spacer()
+        }
+        .onAppear {
+            Task {
+                try? await PushNotificationsUtility.requestPermissions()
+            }
         }
         .navigationBarBackButtonHidden()
         .padding(16)

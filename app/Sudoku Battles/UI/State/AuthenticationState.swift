@@ -85,7 +85,7 @@ class AuthenticationState: ObservableObject {
     
     func logOut() {
         try? auth.signOut()
-        UserPreferencesDs.shared.deleteDarkMode()
+        UserDefaultsDs.shared.deleteDarkMode()
         Main {
             self.user = nil
             self.userData = nil

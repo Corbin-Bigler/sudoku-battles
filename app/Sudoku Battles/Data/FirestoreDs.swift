@@ -109,6 +109,27 @@ class FirestoreDs {
         }
         return results
     }
+    func queryUserDatas(uids: [String]) async throws -> [String : UserData]? {
+        var query: QuerySnapshot!
+        do {
+            query = try await users
+                .whereField(FieldPath.documentID(), in: uids)
+                .limit(to: 5)
+                .getDocuments()
+        } catch {
+            logger.error("\(error)")
+            throw AppError.networkError
+        }
+
+        var results: [String: UserData] = [:]
+        for document in query.documents {
+            if let userData = try? document.data(as: UserData.self) {
+                results[document.documentID] = userData
+            }
+        }
+        return results
+    }
+
     func updateFcmToken(uid: String, fcmToken: String, deviceId: UUID) async throws {
         try await updateDocument(users.document(uid), fields: ["fcmTokens.\(deviceId.uuidString.lowercased())" : fcmToken])
     }

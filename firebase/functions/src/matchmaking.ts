@@ -1,48 +1,21 @@
 import { onCall } from 'firebase-functions/v2/https'
-import { DocumentSnapshot, Timestamp } from 'firebase-admin/firestore';
+import { Timestamp } from 'firebase-admin/firestore';
 import * as admin from 'firebase-admin';
 import { MatchmakingStatus } from './model/MatchmakingStatus';
 import { Matchmaking } from './model/Matchmaking';
 import { BotDuel } from './model/BotDuel';
+import attemptGetRandomSudoku from './utility/attemptGetRandomSudoku';
+import { Difficulty } from './model/Difficulty';
+import { PlayerDuel } from './model/PlayerDuel';
 // import { PlayerDuel } from './model/PlayerDuel';
 
 const db = admin.firestore();
 const botDuels = db.collection('bot-duels')
 const playerDuels = db.collection('player-duels')
 const users = db.collection('users')
-const sudoku = {
-    easy: db.collection("sudoku-easy"),
-    medium: db.collection("sudoku-medium"),
-    hard: db.collection("sudoku-hard"),
-    extreme: db.collection("sudoku-extreme"),
-    inhuman: db.collection("sudoku-inhuman")
-}
 
 const matchmakingTimeout = (8 * 1000)
 const botTimeout = (9 * 1000)
-
-async function attemptGetRandomSudoku(): Promise<DocumentSnapshot | null> {
-    for(let i = 0; i < 3; i++) {
-        const randomValue = sudoku.easy.doc().id
-        const queryRef = sudoku.easy
-            .where("__name__", '>=', randomValue)
-            .orderBy("__name__")
-            .limit(1);
-        
-        try {        
-            const randomSnapshot = await queryRef.get();
-            if (randomSnapshot.empty) return null
-            
-            if(randomSnapshot != null) {
-                return randomSnapshot.docs[0]
-            }    
-        } catch (error) {
-            console.error(error)
-        }
-    }
-    return null
-}
-
 
 export const matchmaking = onCall({
     maxInstances: 1
@@ -74,7 +47,7 @@ export const matchmaking = onCall({
                 const startInMillis = matchmakingData.start.toMillis();
 
                 if(nowInMillis - startInMillis >= botTimeout) {
-                    var randomGame = await attemptGetRandomSudoku()
+                    var randomGame = await attemptGetRandomSudoku(db, Difficulty.Easy)
                     let randomSudoku = randomGame?.data()?.puzzle
                     if(randomGame == null || !randomSudoku) {
                         return JSON.stringify({ status: MatchmakingStatus.ServerError })    
@@ -125,21 +98,21 @@ export const matchmaking = onCall({
         } else {
             const otherMatchmakingRef = filteredDocs[0].ref
 
-            var randomGame = await attemptGetRandomSudoku()
+            var randomGame = await attemptGetRandomSudoku(db, Difficulty.Easy)
             let randomSudoku = randomGame?.data()?.puzzle
             if(randomGame == null || !randomSudoku) {
                 return JSON.stringify({ status: MatchmakingStatus.ServerError })    
             }
 
-            const gameData = {
+            const gameData: PlayerDuel = {
                 "firstPlayer": users.doc(uid),
                 "secondPlayer": filteredDocs[0].data().user,
                 "firstPlayerBoard": randomSudoku,
                 "secondPlayerBoard": randomSudoku,
                 "startTime": Timestamp.fromMillis(Timestamp.now().toMillis() + 3000),
                 "given": randomSudoku,
-                "difficulty": "easy",
-                "sudoku": randomGame.ref
+                "sudoku": randomGame.ref,
+                "winner": null
             };
             const newPlayerDuelRef = playerDuels.doc();
             await newPlayerDuelRef.set(gameData)

@@ -37,7 +37,7 @@ struct DifficultyPage: View {
                     get: {index},
                     set: {
                         index = $0
-                        savedGame = UserPreferencesDs.shared.getGame(difficulty: difficulty)
+                        savedGame = UserDefaultsDs.shared.getGame(difficulty: difficulty)
                     }
                 )
                 HorizontalSelector(options: Difficulty.allCases, index: binding)
@@ -94,7 +94,7 @@ struct DifficultyPage: View {
         }
         .navigationBarBackButtonHidden()
         .onAppear {
-            savedGame = UserPreferencesDs.shared.getGame(difficulty: difficulty)
+            savedGame = UserDefaultsDs.shared.getGame(difficulty: difficulty)
         }
     }
 }

@@ -36,14 +36,15 @@ class FunctionsDs {
         }
     }
 
-//    func sendInvite(uid: String) async throws -> InviteResponse {
-//        try await callFunction("invite", params: ["invitee": uid])
-//    }
-//
+    func acceptInvite(invitePath: String) async throws -> FunctionsResponse<InviteStatus, AcceptInviteData> {
+        try await callFunction("acceptInvite", params: ["invitePath": invitePath])
+    }
+    func sendInvite(uid: String, difficulty: Difficulty) async throws -> FunctionsResponse<InviteStatus, SendInviteData> {
+        try await callFunction("sendInvite", params: ["invitee": uid, "difficulty": difficulty.rawValue])
+    }
     func setUsername(username: String) async throws -> FunctionsResponse<SetUsernameStatus, Never> {
         try await callFunction("setUsername", params: ["username": username])
     }
-    
     func verifyDuelBoard(duelPath: String) async throws -> FunctionsResponse<VerifyDuelBoardStatus, Never> {
         try await callFunction("verifyDuelBoard", params: ["duelPath": duelPath])
     }

@@ -13,11 +13,11 @@ class PreferencesState: ObservableObject {
     @Published var darkMode: Bool?
     
     init() {
-        self.darkMode = UserPreferencesDs.shared.getDarkMode()
+        self.darkMode = UserDefaultsDs.shared.getDarkMode()
     }
     
     func setDarkMode(_ value: Bool) {
-        UserPreferencesDs.shared.save(darkMode: value)
+        UserDefaultsDs.shared.save(darkMode: value)
         darkMode = value
     }
 }

@@ -29,7 +29,7 @@ struct SoloPage: View {
     func updateModel(_ model: SudokuBoard) {
         self.changed = true
         self.model = model
-        UserPreferencesDs.shared.save(game: SoloGame(
+        UserDefaultsDs.shared.save(game: SoloGame(
             model: model,
             solution: solution,
             seconds: seconds
@@ -110,7 +110,7 @@ struct SoloPage: View {
                 }
                 
                 RoundedButton(label: "OK", color: .blue400) {
-                    UserPreferencesDs.shared.deleteGame(difficulty: difficulty)
+                    UserDefaultsDs.shared.deleteGame(difficulty: difficulty)
                     navState.clear()
                 }
             }
