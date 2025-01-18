@@ -102,7 +102,7 @@ struct InvitePage: View {
                     .circleButton(outline: .white) {
                         if waiting {
                             InviteRepo.shared.cancelInvite()
-                            
+                            waiting = false
                         } else if selectedUser != nil {
                             withAnimation {
                                 selectedUser = nil
