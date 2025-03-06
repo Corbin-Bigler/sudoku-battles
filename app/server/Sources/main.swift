@@ -7,7 +7,8 @@
 
 import Foundation
 import SimpleBuffers
+import SudokuBattlesData
 import NIO
 
-let server = try BattleServer(host: "0.0.0.0", port: 8080)
+let server = try SudokuBattlesServer(host: "0.0.0.0", port: 8080)
 try server.run()

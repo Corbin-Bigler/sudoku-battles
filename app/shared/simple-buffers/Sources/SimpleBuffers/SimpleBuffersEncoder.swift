@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class SimpleBufferSerializer: Encoder {
+public class SimpleBuffersEncoder: Encoder {
     private var data = Data()
     private var array: [Data] = []
 
@@ -49,10 +49,10 @@ public class SimpleBufferSerializer: Encoder {
     }
 
     fileprivate struct SingleValueContainer: SingleValueEncodingContainer {
-        let serializer: SimpleBufferSerializer
+        let serializer: SimpleBuffersEncoder
         var codingPath: [any CodingKey] { serializer.codingPath }
 
-        func encodeNil() throws { fatalError("Optional types not supported") }
+        func encodeNil() throws { serializer.data.append(0x00) }
 
         func encodeBool(_ value: Bool) {
             serializer.data.append(value ? 0x01 : 0x00)
@@ -88,15 +88,22 @@ public class SimpleBufferSerializer: Encoder {
         }
 
         func encode<T: Encodable>(_ value: T) throws {
-            if let bool = value as? Bool { encodeBool(bool) }
-            else if let integer = value as? any FixedWidthInteger { encodeInteger(integer) }
-            else if let varInt = value as? VarInt { encodeVarInt(varInt) }
-            else if let float = value as? Float { encodeFloat(float) }
-            else if let double = value as? Double { encodeDouble(double) }
-            else if let string = value as? String { encodeString(string) }
-            else if let uuid = value as? UUID { encodeUUID(uuid) }
-            else if let date = value as? Date { encodeDate(date) }
-            else if let data = value as? Data { try data.encode(to: serializer) }
+            var unwrappedValue: Any = value
+            
+            if let value = value as? OptionalProtocol {
+                encodeInteger(UInt8(0x01))
+                unwrappedValue = value
+            }
+
+            if let bool = unwrappedValue as? Bool { encodeBool(bool) }
+            else if let integer = unwrappedValue as? any FixedWidthInteger { encodeInteger(integer) }
+            else if let varInt = unwrappedValue as? VarInt { encodeVarInt(varInt) }
+            else if let float = unwrappedValue as? Float { encodeFloat(float) }
+            else if let double = unwrappedValue as? Double { encodeDouble(double) }
+            else if let string = unwrappedValue as? String { encodeString(string) }
+            else if let uuid = unwrappedValue as? UUID { encodeUUID(uuid) }
+            else if let date = unwrappedValue as? Date { encodeDate(date) }
+            else if let data = unwrappedValue as? Data { try data.encode(to: serializer) }
             else {
                 throw EncodingError.invalidValue(
                     value,
@@ -110,17 +117,16 @@ public class SimpleBufferSerializer: Encoder {
     }
     
     struct KeyedContainer<Key: CodingKey>: KeyedEncodingContainerProtocol {
-        let serializer: SimpleBufferSerializer
+        let serializer: SimpleBuffersEncoder
         var codingPath: [CodingKey] { return serializer.codingPath }
 
-        private func serializer(with key: CodingKey) -> SimpleBufferSerializer {
+        private func serializer(with key: CodingKey) -> SimpleBuffersEncoder {
             serializer.codingPath += [key]
             return serializer
         }
         
         func encodeNil(forKey key: Key) throws { fatalError("Optional types not supported") }
         func encode<T: Encodable>(_ value: T, forKey key: Key) throws {
-            print(key)
             try value.encode(to: serializer(with: key))
         }
         func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) -> KeyedEncodingContainer<NestedKey> {
@@ -134,7 +140,7 @@ public class SimpleBufferSerializer: Encoder {
     }
     
     struct UnkeyedContainer: UnkeyedEncodingContainer {
-        let serializer: SimpleBufferSerializer
+        let serializer: SimpleBuffersEncoder
         var codingPath: [CodingKey] { return serializer.codingPath }
         var count: Int = 0
         
@@ -147,19 +153,15 @@ public class SimpleBufferSerializer: Encoder {
             fatalError("Optional types not supported")
         }
         func encode<T: Encodable>(_ value: T) throws {
-            let serializer = SimpleBufferSerializer()
+            let serializer = SimpleBuffersEncoder()
             self.serializer.array.append(try serializer.encode(value))
         }
     }
 }
 
-extension Optional where Wrapped : Encodable {
-    @inlinable
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        switch self {
-        case .none: try container.encodeNil()
-        case .some(let wrapped): try container.encode(wrapped)
-        }
-    }
+private protocol OptionalProtocol {
+    static var wrappedType: Any.Type { get }
+}
+extension Optional: OptionalProtocol {
+    static var wrappedType: Any.Type { return Wrapped.self }
 }

@@ -7,19 +7,22 @@ let package = Package(
     name: "sudoku-battles-server",
     platforms: [.macOS(.v15)],
     dependencies: [
+        .package(url: "https://github.com/orlandos-nl/MongoKitten.git", .upToNextMajor(from: "7.9.9")),
         .package(url: "https://github.com/apple/swift-nio.git", .upToNextMajor(from: "2.81.0")),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.0.0"),
         .package(path: "../shared/simple-buffers"),
-        .package(path: "../shared/sudoku-battles-communication")
+        .package(path: "../shared/sudoku-battles-data")
     ],
     targets: [
         .executableTarget(
             name: "SudokuBattlesServer",
             dependencies: [
-                .product(name: "SudokuBattlesCommunication", package: "sudoku-battles-communication"),
+                .product(name: "SudokuBattlesData", package: "sudoku-battles-data"),
                 .product(name: "SimpleBuffers", package: "simple-buffers"),
                 .product(name: "NIO", package: "swift-nio"),
-                .product(name: "NIOSSL", package: "swift-nio-ssl")
+                .product(name: "NIOSSL", package: "swift-nio-ssl"),
+                .product(name: "MongoKitten", package: "MongoKitten"),
+                .product(name: "Meow", package: "MongoKitten")
             ],
             resources: [
                 .process("cert.pem"),

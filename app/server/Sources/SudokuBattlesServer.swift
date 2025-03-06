@@ -9,7 +9,7 @@ import Foundation
 import NIO
 import NIOSSL
 
-final public class BattleServer: Sendable {
+final public class SudokuBattlesServer: Sendable {
     private let group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
     private let host: String
     private let port: Int
@@ -39,7 +39,11 @@ final public class BattleServer: Sendable {
             .childChannelInitializer { channel in
                 channel.pipeline.addHandler(NIOSSLServerHandler(context: self.sslContext)).flatMap {
                     channel.pipeline.addHandler(BackPressureHandler()).flatMap {
-                        channel.pipeline.addHandler(BattleHandler())
+                        channel.pipeline.addHandlers([
+                            ByteToMessageHandler(SudokuBattlesFrameDecoder()),
+                            MessageToByteHandler(SudokuBattlesFrameEncoder()),
+                            SudokuBattlesHandler(),
+                        ])
                     }
                 }
             }

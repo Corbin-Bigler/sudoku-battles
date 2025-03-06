@@ -9,7 +9,7 @@ import Foundation
 
 public struct VarInt: Codable {
     public let bytes: Data
-    private(set) var value: UInt64
+    private(set) public var value: UInt64
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()

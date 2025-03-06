@@ -1,5 +1,5 @@
 //
-//  TestPacket.swift
+//  TestClientboundPayload.swift
 //  SwiftNIOTutorial
 //
 //  Created by Corbin Bigler on 3/3/25.
@@ -7,7 +7,7 @@
 
 import SimpleBuffers
 
-public struct TestClientboundFrame: Codable {
+public struct TestClientboundPayload: Codable {
     public var message: String
     public var randomNumber: Int64
     

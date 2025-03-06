@@ -5,9 +5,12 @@
       location = "group:simple-buffers">
    </FileRef>
    <FileRef
-      location = "group:sudoku-battles-communication">
+      location = "group:sudoku-battles-data">
    </FileRef>
    <FileRef
       location = "container:../server">
+   </FileRef>
+   <FileRef
+      location = "container:../ios/SudokuBattles.xcodeproj">
    </FileRef>
 </Workspace>

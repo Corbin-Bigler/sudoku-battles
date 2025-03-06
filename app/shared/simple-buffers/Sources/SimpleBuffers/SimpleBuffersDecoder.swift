@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class SimpleBufferDeserializer: Decoder {
+public class SimpleBuffersDecoder: Decoder {
     var data: Data!
     var offset: Int!
     
@@ -24,26 +24,26 @@ public class SimpleBufferDeserializer: Decoder {
     }
 
     public func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key : CodingKey {
-        .init(KeyedContainer(deserializer: self))
+        .init(KeyedContainer(decoder: self))
     }
     public func unkeyedContainer() throws -> any UnkeyedDecodingContainer {
-        return UnkeyedContainer(deserializer: self)
+        return UnkeyedContainer(decoder: self)
     }
     public func singleValueContainer() throws -> any SingleValueDecodingContainer {
-        return SingleValueContainer(deserializer: self)
+        return SingleValueContainer(decoder: self)
     }
 
     struct SingleValueContainer: SingleValueDecodingContainer {
-        private let deserializer: SimpleBufferDeserializer
+        private let decoder: SimpleBuffersDecoder
         
-        var data: Data { deserializer.data }
-        var offset: Int { deserializer.offset }
+        var data: Data { decoder.data }
+        var offset: Int { decoder.offset }
 
-        var codingPath: [CodingKey] { return deserializer.codingPath }
+        var codingPath: [CodingKey] { return decoder.codingPath }
         var unexpectedEndOfData: DecodingError { DecodingError.dataCorrupted(.init(codingPath: codingPath, debugDescription: "Unexpected end of data")) }
         
-        init(deserializer: SimpleBufferDeserializer) {
-            self.deserializer = deserializer
+        init(decoder: SimpleBuffersDecoder) {
+            self.decoder = decoder
         }
         
         func decodeNil() -> Bool { fatalError("Optional types not supported") }
@@ -51,7 +51,7 @@ public class SimpleBufferDeserializer: Decoder {
             let size = MemoryLayout<T>.size
             guard offset + size <= data.count else { throw unexpectedEndOfData }
             let value = data.subdata(in: offset..<(offset + size)).withUnsafeBytes { $0.loadUnaligned(as: T.self) }
-            deserializer.offset += size
+            decoder.offset += size
             return T(littleEndian: value)
         }
         func decodeFloat() throws -> Float {
@@ -66,7 +66,7 @@ public class SimpleBufferDeserializer: Decoder {
             let length = Int(varLength.value)
             guard offset + length <= data.count else { throw unexpectedEndOfData }
             let stringData = data.subdata(in: offset..<offset + length)
-            deserializer.offset += length
+            decoder.offset += length
             guard let string = String(data: stringData, encoding: .utf8) else {
                 throw DecodingError.dataCorrupted(.init(codingPath: codingPath, debugDescription: "Invalid UTF-8 string"))
             }
@@ -79,7 +79,7 @@ public class SimpleBufferDeserializer: Decoder {
             
             while offset < data.count {
                 let byte = data[offset]
-                deserializer.offset += 1
+                decoder.offset += 1
                 bytesRead += 1
                 
                 let value = UInt64(byte & 0x7F)
@@ -100,7 +100,7 @@ public class SimpleBufferDeserializer: Decoder {
                 throw DecodingError.dataCorrupted(.init(codingPath: codingPath, debugDescription: "Unexpected end of data for UUID"))
             }
             let bytes = Array(data[offset..<offset+16])
-            deserializer.offset += 16
+            decoder.offset += 16
             return UUID(uuid: (bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10], bytes[11], bytes[12], bytes[13], bytes[14], bytes[15]))
         }
         func decodeDate() throws -> Date {
@@ -135,57 +135,64 @@ public class SimpleBufferDeserializer: Decoder {
     }
     
     struct KeyedContainer<Key: CodingKey>: KeyedDecodingContainerProtocol {
-        private let deserializer: SimpleBufferDeserializer
-        var codingPath: [CodingKey] { return deserializer.codingPath }
+        private let decoder: SimpleBuffersDecoder
+        var codingPath: [CodingKey] { return decoder.codingPath }
         var allKeys: [Key] = []
 
-        init(deserializer: SimpleBufferDeserializer) { self.deserializer = deserializer }
+        init(decoder: SimpleBuffersDecoder) { self.decoder = decoder }
 
-        private func deserializer(with key: CodingKey) -> SimpleBufferDeserializer {
-            deserializer.codingPath += [key]
-            return deserializer
+        private func decoder(with key: CodingKey) -> SimpleBuffersDecoder {
+            decoder.codingPath += [key]
+            return decoder
         }
 
         func contains(_ key: Key) -> Bool { return true }
-        func decodeNil(forKey key: Key) throws -> Bool { fatalError("Optional types not supported") }
+        func decodeNil(forKey key: Key) throws -> Bool {
+            let currentByte = decoder.data[decoder.offset]
+            if currentByte > 1 {
+                throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: codingPath, debugDescription: "Currupted optional data"))
+            }
+            decoder.offset += 1
+            return currentByte == 0
+        }
         
         func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
-            try deserializer(with: key).container(keyedBy: type)
+            try decoder(with: key).container(keyedBy: type)
         }
-        func nestedUnkeyedContainer(forKey key: Key) throws -> any UnkeyedDecodingContainer { try deserializer(with: key).unkeyedContainer() }
-        func superDecoder() throws -> any Decoder { deserializer }
-        func superDecoder(forKey key: Key) throws -> any Decoder { deserializer(with: key) }
+        func nestedUnkeyedContainer(forKey key: Key) throws -> any UnkeyedDecodingContainer { try decoder(with: key).unkeyedContainer() }
+        func superDecoder() throws -> any Decoder { decoder }
+        func superDecoder(forKey key: Key) throws -> any Decoder { decoder(with: key) }
 
         func decode<T: Decodable>(_ type: T.Type, forKey key: Key) throws -> T {
-            return try T.init(from: deserializer(with: key))
+            return try T.init(from: decoder(with: key))
         }
     }
     
     struct UnkeyedContainer: UnkeyedDecodingContainer {
-        private let deserializer: SimpleBufferDeserializer
-        var codingPath: [CodingKey] { return deserializer.codingPath }
+        private let decoder: SimpleBuffersDecoder
+        var codingPath: [CodingKey] { return decoder.codingPath }
         var count: Int?
         var isAtEnd: Bool = false
         var currentIndex: Int = 0
         
-        init(deserializer: SimpleBufferDeserializer) {
-            let varCount = try! (try! deserializer.singleValueContainer() as! SingleValueContainer).decodeVarInt()
+        init(decoder: SimpleBuffersDecoder) {
+            let varCount = try! (try! decoder.singleValueContainer() as! SingleValueContainer).decodeVarInt()
             count = Int(varCount.value)
-            self.deserializer = deserializer
+            self.decoder = decoder
         }
         
         mutating func decode<T: Decodable>(_ type: T.Type) throws -> T {
             currentIndex += 1
             isAtEnd = currentIndex == count!
-            return try T.init(from: deserializer)
+            return try T.init(from: decoder)
         }
         func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type) throws -> KeyedDecodingContainer<NestedKey> where NestedKey : CodingKey {
-            try deserializer.container(keyedBy: type)
+            try decoder.container(keyedBy: type)
         }
         func nestedUnkeyedContainer() throws -> any UnkeyedDecodingContainer {
-            try deserializer.unkeyedContainer()
+            try decoder.unkeyedContainer()
         }
-        func superDecoder() throws -> any Decoder { deserializer }
+        func superDecoder() throws -> any Decoder { decoder }
         func decodeNil() -> Bool { fatalError() }
     }
 

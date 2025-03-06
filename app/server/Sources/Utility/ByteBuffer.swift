@@ -8,9 +8,9 @@
 import NIO
 import Foundation
 
-extension ByteBuffer {
-    var data: Data? {
-        var mutableSelf = self
-        return mutableSelf.readBytes(length: mutableSelf.readableBytes).flatMap { Data($0) }
-    }
-}
+//extension ByteBuffer {
+//    var data: Data? {
+//        var mutableSelf = self
+//        return mutableSelf.readBytes(length: mutableSelf.readableBytes).flatMap { Data($0) }
+//    }
+//}
