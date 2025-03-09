@@ -1,26 +1,26 @@
 //
-//  BattleServer.swift
-//  SwiftNIOTutorial
+//  SudokuBattlesServer.swift
+//  server
 //
-//  Created by Corbin Bigler on 3/2/25.
+//  Created by Corbin Bigler on 3/9/25.
 //
 
 import Foundation
 import NIO
 import NIOSSL
 
-final public class SudokuBattlesServer: Sendable {
+final class SudokuBattlesServer: Sendable {
     private let group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
     private let host: String
     private let port: Int
     private let sslContext: NIOSSLContext
 
-    init(host: String, port: Int) throws {
+    private init(host: String, port: Int) throws {
         self.host = host
         self.port = port
         
         let certPath = Bundle.module.path(forResource: "cert", ofType: "pem")!
-        let keyPath = Bundle.module.path(forResource: "key", ofType: "pem")!
+        let keyPath = Bundle.module.path(forResource: "server", ofType: "key")!
         
         let cert = try NIOSSLCertificate.fromPEMFile(certPath).map { NIOSSLCertificateSource.certificate($0) }
         let key = try NIOSSLPrivateKey(file: keyPath, format: .pem)
@@ -38,13 +38,13 @@ final public class SudokuBattlesServer: Sendable {
             .serverChannelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .childChannelInitializer { channel in
                 channel.pipeline.addHandler(NIOSSLServerHandler(context: self.sslContext)).flatMap {
-                    channel.pipeline.addHandler(BackPressureHandler()).flatMap {
-                        channel.pipeline.addHandlers([
-                            ByteToMessageHandler(SudokuBattlesFrameDecoder()),
-                            MessageToByteHandler(SudokuBattlesFrameEncoder()),
-                            SudokuBattlesHandler(),
-                        ])
-                    }
+                    channel.pipeline.addHandler(BackPressureHandler())//.flatMap {
+//                        channel.pipeline.addHandlers([
+//                            ByteToMessageHandler(SudokuBattlesFrameDecoder()),
+//                            MessageToByteHandler(SudokuBattlesFrameEncoder()),
+//                            SudokuBattlesHandler(),
+//                        ])
+//                    }
                 }
             }
             .childChannelOption(ChannelOptions.socket(IPPROTO_TCP, TCP_NODELAY), value: 1)
