@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		628D9FE52D793DB5007899EA /* SimpleBuffers in Frameworks */ = {isa = PBXBuildFile; productRef = 628D9FE42D793DB5007899EA /* SimpleBuffers */; };
-		628D9FE82D793DBE007899EA /* SudokuBattlesData in Frameworks */ = {isa = PBXBuildFile; productRef = 628D9FE72D793DBE007899EA /* SudokuBattlesData */; };
+		62F96CDC2D829B74003F253C /* SudokuBattlesData in Frameworks */ = {isa = PBXBuildFile; productRef = 62F96CDB2D829B74003F253C /* SudokuBattlesData */; };
+		62FD43F22D811D9200A39EE3 /* Piste in Frameworks */ = {isa = PBXBuildFile; productRef = 62FD43F12D811D9200A39EE3 /* Piste */; };
+		62FD43FB2D811E8400A39EE3 /* NIO in Frameworks */ = {isa = PBXBuildFile; productRef = 62FD43FA2D811E8400A39EE3 /* NIO */; };
+		62FD43FE2D811E9100A39EE3 /* NIOSSL in Frameworks */ = {isa = PBXBuildFile; productRef = 62FD43FD2D811E9100A39EE3 /* NIOSSL */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,8 +30,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				628D9FE52D793DB5007899EA /* SimpleBuffers in Frameworks */,
-				628D9FE82D793DBE007899EA /* SudokuBattlesData in Frameworks */,
+				62FD43F22D811D9200A39EE3 /* Piste in Frameworks */,
+				62F96CDC2D829B74003F253C /* SudokuBattlesData in Frameworks */,
+				62FD43FB2D811E8400A39EE3 /* NIO in Frameworks */,
+				62FD43FE2D811E9100A39EE3 /* NIOSSL in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,8 +76,10 @@
 			);
 			name = SudokuBattles;
 			packageProductDependencies = (
-				628D9FE42D793DB5007899EA /* SimpleBuffers */,
-				628D9FE72D793DBE007899EA /* SudokuBattlesData */,
+				62FD43F12D811D9200A39EE3 /* Piste */,
+				62FD43FA2D811E8400A39EE3 /* NIO */,
+				62FD43FD2D811E9100A39EE3 /* NIOSSL */,
+				62F96CDB2D829B74003F253C /* SudokuBattlesData */,
 			);
 			productName = SudokuBattles;
 			productReference = 628D9FC92D793D7E007899EA /* SudokuBattles.app */;
@@ -104,8 +110,10 @@
 			mainGroup = 628D9FC02D793D7E007899EA;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				628D9FE32D793DB5007899EA /* XCLocalSwiftPackageReference "../shared/simple-buffers" */,
-				628D9FE62D793DBE007899EA /* XCLocalSwiftPackageReference "../shared/sudoku-battles-data" */,
+				62FD43F02D811D9200A39EE3 /* XCLocalSwiftPackageReference "../../../piste" */,
+				62FD43F92D811E8400A39EE3 /* XCRemoteSwiftPackageReference "swift-nio" */,
+				62FD43FC2D811E9100A39EE3 /* XCRemoteSwiftPackageReference "swift-nio-ssl" */,
+				62F96CDA2D829B74003F253C /* XCLocalSwiftPackageReference "../shared/sudoku-battles-data" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 628D9FCA2D793D7E007899EA /* Products */;
@@ -264,7 +272,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"SudokuBattles/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = CN9BXLUCHZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -293,7 +301,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"SudokuBattles/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = CN9BXLUCHZ;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -339,24 +347,53 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		628D9FE32D793DB5007899EA /* XCLocalSwiftPackageReference "../shared/simple-buffers" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "../shared/simple-buffers";
-		};
-		628D9FE62D793DBE007899EA /* XCLocalSwiftPackageReference "../shared/sudoku-battles-data" */ = {
+		62F96CDA2D829B74003F253C /* XCLocalSwiftPackageReference "../shared/sudoku-battles-data" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../shared/sudoku-battles-data";
 		};
+		62FD43F02D811D9200A39EE3 /* XCLocalSwiftPackageReference "../../../piste" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../../piste;
+		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCSwiftPackageProductDependency section */
-		628D9FE42D793DB5007899EA /* SimpleBuffers */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SimpleBuffers;
+/* Begin XCRemoteSwiftPackageReference section */
+		62FD43F92D811E8400A39EE3 /* XCRemoteSwiftPackageReference "swift-nio" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.81.0;
+			};
 		};
-		628D9FE72D793DBE007899EA /* SudokuBattlesData */ = {
+		62FD43FC2D811E9100A39EE3 /* XCRemoteSwiftPackageReference "swift-nio-ssl" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-nio-ssl.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.29.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		62F96CDB2D829B74003F253C /* SudokuBattlesData */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = SudokuBattlesData;
+		};
+		62FD43F12D811D9200A39EE3 /* Piste */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Piste;
+		};
+		62FD43FA2D811E8400A39EE3 /* NIO */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62FD43F92D811E8400A39EE3 /* XCRemoteSwiftPackageReference "swift-nio" */;
+			productName = NIO;
+		};
+		62FD43FD2D811E9100A39EE3 /* NIOSSL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 62FD43FC2D811E9100A39EE3 /* XCRemoteSwiftPackageReference "swift-nio-ssl" */;
+			productName = NIOSSL;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

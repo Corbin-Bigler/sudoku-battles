@@ -2,12 +2,18 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:app/server">
-   </FileRef>
-   <FileRef
       location = "container:../hardpack">
    </FileRef>
    <FileRef
       location = "container:../piste">
+   </FileRef>
+   <FileRef
+      location = "group:app/shared/sudoku-battles-data">
+   </FileRef>
+   <FileRef
+      location = "group:app/server">
+   </FileRef>
+   <FileRef
+      location = "group:app/ios/SudokuBattles.xcodeproj">
    </FileRef>
 </Workspace>
