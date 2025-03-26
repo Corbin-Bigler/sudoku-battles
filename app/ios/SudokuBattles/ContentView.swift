@@ -35,8 +35,9 @@ struct ContentView: View {
     
     func send() {
         let encoder = HardpackEncoder()
-        let encoded = try! encoder.encode(UserSetUsernameService.ServerBoundPayload(username: "asdf"))
-        client.send(frame: EncodedPisteFrame(function: UserSetUsernameService.function, version: VarInt(UserSetUsernameService.version), payload: encoded))
+        guard let deviceId = UIDevice.current.identifierForVendor else { return }
+        let encoded = try! encoder.encode(UserCreateService.ServerBound(id: deviceId))
+        client.send(frame: EncodedPisteFrame(function: UserCreateService.function, version: VarInt(UserCreateService.version), payload: encoded))
     }
     
     var body: some View {
